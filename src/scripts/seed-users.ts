@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { DataSource, DeepPartial } from 'typeorm';
-import { User } from '../users/user.entity';
+import { User } from '../modules/users/user.entity';
 import { join } from 'path';
 
 const AppDataSource = new DataSource({

@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { Balance } from '../balance/balance.entity';
+import { Balance } from '../modules/balance4/balance.entity';
 import { config } from 'dotenv';
 
 config(); // טוען את .env

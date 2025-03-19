@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
-import { User } from './users/user.entity';
-import { UsersModule } from './users/users.module';
-import { BalanceModule } from './balance/balance.module';
-import { Balance } from './balance/balance.entity';
+import { User } from './modules/users/user.entity';
+import { UsersModule } from './modules/users/users.module';
+import { BalanceModule } from './modules/balance4/balance.module';
+import { Balance } from './modules/balance4/balance.entity';
 
 
 @Module({
@@ -25,7 +25,7 @@ import { Balance } from './balance/balance.entity';
     }),
     
     UsersModule,
-    BalanceModule,
+    BalanceModule
   ],
 })
 export class AppModule {}
