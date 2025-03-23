@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import { Balance } from '../balance/balance.entity';
+import { ChildBalance } from '../child-balance/entities/child-balance.entity';
 
 @Injectable()
 export class UsersService {
@@ -10,8 +10,8 @@ export class UsersService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
 
-    @InjectRepository(Balance)
-    private balanceRepository: Repository<Balance>,
+    @InjectRepository(ChildBalance)
+    private balanceRepository: Repository<ChildBalance>,
   ) {}
 
   async getBalance(userId: string) {
