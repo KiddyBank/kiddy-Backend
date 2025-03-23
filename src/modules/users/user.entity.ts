@@ -1,6 +1,26 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { Family } from '../family/entities/family.entity';
 
-@Entity({ schema: 'auth', name: 'users' }) // חשוב schema
+export enum UserRole {
+  PARENT = 'parent',
+  CHILD = 'child',
+}
+
+export enum Gender {
+  MALE = 'male',
+  FEMALE = 'female',
+  OTHER = 'other',
+}
+
+@Entity({ schema: 'auth', name: 'users' })
 export class User {
   @PrimaryGeneratedColumn('uuid')
   user_id: string;
@@ -14,27 +34,32 @@ export class User {
   @Column()
   password_hash: string;
 
-  @Column()
-  user_role: string;
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+  })
+  user_role: UserRole;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn()
   created_at: Date;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn()
   updated_at: Date;
 
-  @Column({ nullable: true })
+  @ManyToOne(() => Family, (family) => family.id)
+  @JoinColumn()
   family_id: number;
 
-  @Column({ nullable: true })
-  dob: string;
+  @Column()
+  dob: Date;
 
-  @Column({ nullable: true })
-  gender: string;
+  @Column({
+    type: 'enum',
+    enum: Gender,
+    default: Gender.OTHER,
+  })
+  gender: Gender;
 
   @Column({ nullable: true })
   avatar_path: string;
-
-  @Column({ type: 'integer', default: 0 })
-  balance: number;
 }

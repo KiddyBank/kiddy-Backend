@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
-import { User } from './modules/users/user.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ChildBalanceModule } from './modules/child-balance/child-balance.module';
+import { FamilyModule } from './modules/family/family.module';
+import { TransactionsModule } from './modules/transactions/transactions.module';
 import { UsersModule } from './modules/users/users.module';
-import { BalanceModule } from './modules/balance4/balance.module';
-import { Balance } from './modules/balance4/balance.entity';
-
 
 @Module({
   imports: [
@@ -19,13 +18,16 @@ import { Balance } from './modules/balance4/balance.entity';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      ssl: { rejectUnauthorized: false }, 
-      entities: [User,Balance],
-      synchronize: false, 
+      ssl: { rejectUnauthorized: false },
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      synchronize: false,
     }),
-    
+
     UsersModule,
-    BalanceModule
+    ChildBalanceModule,
+    FamilyModule,
+    TransactionsModule
+    
   ],
 })
 export class AppModule {}

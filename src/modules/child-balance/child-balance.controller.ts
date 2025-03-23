@@ -2,10 +2,18 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { ChildBalanceService } from './child-balance.service';
 import { CreateChildBalanceDto } from './dto/create-child-balance.dto';
 import { UpdateChildBalanceDto } from './dto/update-child-balance.dto';
+import { PaymentRequestDto } from './dto/payment-request.dto';
 
 @Controller('child-balance')
 export class ChildBalanceController {
   constructor(private readonly childBalanceService: ChildBalanceService) {}
+
+
+
+  @Post('place-payment-request/:childId')
+  placePaymentRequest(@Param('childId') childId: string, @Body() paymentRequestDto: PaymentRequestDto) {
+    return this.childBalanceService.placePaymentRequest(childId, paymentRequestDto);
+  }
 
   @Post()
   create(@Body() createChildBalanceDto: CreateChildBalanceDto) {
@@ -17,7 +25,7 @@ export class ChildBalanceController {
     return this.childBalanceService.findAll();
   }
 
-  
+
 
   @Get(':id')
   findOne(@Param('id') id: string) {

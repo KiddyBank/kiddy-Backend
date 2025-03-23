@@ -3,29 +3,41 @@ import { CreateChildBalanceDto } from './dto/create-child-balance.dto';
 import { UpdateChildBalanceDto } from './dto/update-child-balance.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Balance } from '../balance4/balance.entity';
 import { ChildBalance } from './entities/child-balance.entity';
+import { PaymentRequestDto } from './dto/payment-request.dto';
+import {
+  Transaction,
+  TransactionType,
+} from '../transactions/entities/transaction.entity';
 
 @Injectable()
 export class ChildBalanceService {
-    constructor(
-  @InjectRepository(Balance)
-      private readonly childBalanceRepository: Repository<ChildBalance>,
-    ) {}
+  constructor(
+    @InjectRepository(ChildBalance)
+    private childBalanceRepository: Repository<ChildBalance>,
 
-  async getBalance(childId: string) {
-      const balance = await this.childBalanceRepository.findOne({
-        where: { child_id: childId, is_active: true },
-      });
-  
-      if (!balance) {
-        return { message: 'Balance not found', balance: 9 };
-      }
-  
-      return { balance: balance.balance_amount };
-    }
+    @InjectRepository(Transaction)
+    private transactionsRepository: Repository<Transaction>,
+  ) {}
 
-    
+  async placePaymentRequest(
+    childId: string,
+    paymentRequestDto: PaymentRequestDto,
+  ) {
+    const childBalance = await this.childBalanceRepository.findOne({
+      where: { child_id: childId },
+    });
+
+    const pendingTransaction: Transaction = new Transaction(
+      childBalance!.balance_id,
+      TransactionType.REQUEST_FOR_PAYMENT,
+      paymentRequestDto.amount,
+      paymentRequestDto.description,
+    );
+
+    await this.transactionsRepository.save(pendingTransaction);
+  }
+
   create(createChildBalanceDto: CreateChildBalanceDto) {
     return 'This action adds a new childBalance';
   }
