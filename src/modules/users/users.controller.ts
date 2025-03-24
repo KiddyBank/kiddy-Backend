@@ -16,6 +16,18 @@ export class UsersController {
     return this.usersService.getBalance(fixedUserId);
   }
 
+  @Get('transactions')
+  getFixedTransactions() {
+    const fixedBalanceId = 1; // balance_id דיפולטי
+    return this.usersService.getFixedTransactions(fixedBalanceId);
+  } 
+
+  @Get('tasks')
+  getFixedTasks() {
+    const fixedBalanceId = 1; //  balance_id דיפולטי
+    return this.usersService.getFixedTasks(fixedBalanceId);
+  }
+
   @Get('test')
   test() {
     return 'Controller working!';

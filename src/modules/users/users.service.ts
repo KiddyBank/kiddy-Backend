@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { ChildBalance } from '../child-balance/entities/child-balance.entity';
+import { Transaction } from '../transactions/entities/transaction.entity'; 
+import { Task } from '../tasks/entities/task.entity'; 
 
 @Injectable()
 export class UsersService {
@@ -12,15 +14,19 @@ export class UsersService {
 
     @InjectRepository(ChildBalance)
     private balanceRepository: Repository<ChildBalance>,
+
+    @InjectRepository(Transaction)
+    private transactionsRepository: Repository<Transaction>, 
+
+    @InjectRepository(Task)
+    private tasksRepository: Repository<Task>, 
   ) {}
 
   async getBalance(userId: string) {
-
     try {
       const balance = await this.balanceRepository.findOne({
         where: { child_id: userId },
       });
-
 
       if (!balance) {
         return { balance: 0, message: 'Balance not found' };
@@ -31,4 +37,31 @@ export class UsersService {
       throw error;
     }
   }
+
+  async getFixedTransactions(balanceId: number) {
+    try {
+      const transactions = await this.transactionsRepository.find({
+        where: { balance_id: balanceId },
+        order: { created_at: 'DESC' },
+      });
+
+      return transactions;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getFixedTasks(balanceId: number) {
+    try {
+      const tasks = await this.tasksRepository.find({
+        where: { balance_id: balanceId },
+      });
+  
+      return tasks;
+    } catch (error) {
+      console.error('❌ Error fetching tasks:', error);
+      return []; 
+    }
+  }
+  
 }
