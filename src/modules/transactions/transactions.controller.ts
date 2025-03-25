@@ -11,7 +11,7 @@ import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 
-@Controller('transactions')
+@Controller('child-balance/transactions')
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
@@ -20,9 +20,9 @@ export class TransactionsController {
     return this.transactionsService.create(createTransactionDto);
   }
 
-  @Get()
-  findAll() {
-    return this.transactionsService.findAll();
+  @Get(':childId')
+  findAllChildTransactions(@Param('childId') childId: string) {
+    return this.transactionsService.findAllChildTransactions(childId);
   }
 
   @Get(':id')
