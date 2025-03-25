@@ -7,6 +7,7 @@ import { ChildBalance } from './entities/child-balance.entity';
 import { PaymentRequestDto } from './dto/payment-request.dto';
 import {
   Transaction,
+  TransactionStatus,
   TransactionType,
 } from '../transactions/entities/transaction.entity';
 
@@ -30,9 +31,10 @@ export class ChildBalanceService {
 
     const pendingTransaction: Transaction = new Transaction(
       childBalance!.balance_id,
-      TransactionType.REQUEST_FOR_PAYMENT,
+      TransactionType.STORE_PURCHASE,
       paymentRequestDto.amount,
       paymentRequestDto.description,
+      TransactionStatus.PENDING_PARENT_APPROVAL
     );
 
     await this.transactionsRepository.save(pendingTransaction);
