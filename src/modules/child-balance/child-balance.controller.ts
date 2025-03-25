@@ -5,10 +5,15 @@ import { UpdateChildBalanceDto } from './dto/update-child-balance.dto';
 import { PaymentRequestDto } from './dto/payment-request.dto';
 
 @Controller('child-balance')
+
 export class ChildBalanceController {
   constructor(private readonly childBalanceService: ChildBalanceService) {}
 
-
+  @Patch('charge-one-shekel')
+  async chargeOneShekel() {
+    const childId = process.env.DEFAULT_CHILD_ID as string; // ילד דיפולטי
+    return this.childBalanceService.chargeOneShekel(childId);
+  }
 
   @Post('place-payment-request/:childId')
   placePaymentRequest(@Param('childId') childId: string, @Body() paymentRequestDto: PaymentRequestDto) {
@@ -25,8 +30,6 @@ export class ChildBalanceController {
     return this.childBalanceService.findAll();
   }
 
-
-
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.childBalanceService.findOne(+id);
@@ -41,4 +44,5 @@ export class ChildBalanceController {
   remove(@Param('id') id: string) {
     return this.childBalanceService.remove(+id);
   }
+
 }
