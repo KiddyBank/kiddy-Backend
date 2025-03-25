@@ -64,4 +64,24 @@ export class UsersService {
     }
   }
   
+
+  async deductBalance(userId: string, amount: number) {
+    try {
+      const balance = await this.balanceRepository.findOne({
+        where: { child_id: userId },
+      });
+  
+      if (!balance) {
+        return { success: false, message: 'Balance not found' };
+      }
+
+      balance.balance_amount -= amount;
+      await this.balanceRepository.save(balance);
+  
+      return { success: true, newBalance: balance.balance_amount };
+    } catch (error) {
+      console.error('❌ Error updating balance:', error);
+      throw error;
+    }
+  }
 }
