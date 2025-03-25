@@ -16,7 +16,8 @@ export enum TransactionStatus{
     COMPLETED = 'COMPLETED',
     FAILED = 'FAILED',
     REJECTED = 'REJECTED',
-    APPROVED = 'APPORVED'
+    APPROVED = 'APPORVED',
+    PENDING_STORE = 'PENDING_STORE'
 }
 
 @Entity({ schema: 'finance', name: 'transactions' })
