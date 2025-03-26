@@ -32,10 +32,8 @@ export class ChildBalanceService {
     const newTransaction: Transaction = new Transaction(
       childBalance!.balance_id,
       TransactionType.STORE_PURCHASE,
-      TransactionType.STORE_PURCHASE,
       paymentRequestDto.amount,
       paymentRequestDto.description,
-      TransactionStatus.PENDING_PARENT_APPROVAL
       TransactionStatus.PENDING_PARENT_APPROVAL
     );
 
