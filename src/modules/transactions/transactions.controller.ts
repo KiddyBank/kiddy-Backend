@@ -25,11 +25,6 @@ export class TransactionsController {
     return this.transactionsService.findAllChildTransactions(childId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.transactionsService.findOne(+id);
-  }
-
   @Patch(':id')
   update(
     @Param('id') id: string,
