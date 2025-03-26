@@ -47,7 +47,7 @@ export class User {
   updated_at: Date;
 
   @ManyToOne(() => Family, (family) => family.id)
-  @JoinColumn()
+  @JoinColumn({ name: 'family_id' })
   family_id: number;
 
   @Column()

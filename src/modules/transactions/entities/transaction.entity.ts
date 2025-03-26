@@ -6,29 +6,28 @@ export enum TransactionType{
     PARENT_DEPOSIT = 'parent_deposit',
     GOAL_DEPOSIT = 'goal_deposit',
     GOAL_WITHDRAW = 'goal_withdraw',
-    REQUEST_FOR_PAYMENT = 'request_for_payment',
     STORE_PURCHASE = 'store_purchase',
     STORE_REFUND = 'store_refund'
 }
 
 export enum TransactionStatus{
-    PENDING = 'PENDING',
-    COMPLETED = 'COMPLETED',
+    PENDING_PARENT_APPROVAL = 'PENDING_PARENT_APPROVAL',
+    APPORVED_BY_PARENT = 'APPORVED_BY_PARENT',
+    PENDING_STORE = 'PENDING_STORE',
     FAILED = 'FAILED',
     REJECTED = 'REJECTED',
-    APPROVED = 'APPORVED',
-    PENDING_STORE = 'PENDING_STORE'
+    COMPLETED = 'COMPLETED',
 }
 
 @Entity({ schema: 'finance', name: 'transactions' })
 export class Transaction {
 
-constructor(childId: number, transactionType: TransactionType, amount: number, description: string) {
+constructor(childId: number, transactionType: TransactionType, amount: number, description: string, status: TransactionStatus) {
         this.balance_id = childId;
         this.type=transactionType;
         this.amount=amount;
         this.description = description;
-        this.status = TransactionStatus.PENDING;
+        this.status = status;
           }
 
   @PrimaryGeneratedColumn('uuid')
@@ -52,8 +51,7 @@ constructor(childId: number, transactionType: TransactionType, amount: number, d
 
   @Column({
     type: 'enum',
-    enum: TransactionStatus,
-    default: TransactionStatus.PENDING
+    enum: TransactionStatus
 })
   status: TransactionStatus;
 

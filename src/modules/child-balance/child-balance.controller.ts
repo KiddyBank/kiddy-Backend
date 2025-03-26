@@ -11,7 +11,7 @@ export class ChildBalanceController {
 
   @Patch('charge-one-shekel')
   async chargeOneShekel() {
-    const childId = process.env.DEFAULT_CHILD_ID as string; // ילד דיפולטי
+    const childId = process.env.DEFAULT_CHILD_ID as string; 
     return this.childBalanceService.chargeOneShekel(childId);
   }
 

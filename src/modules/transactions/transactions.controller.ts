@@ -24,6 +24,7 @@ export class TransactionsController {
   findAllChildTransactions(@Param('childId') childId: string) {
     return this.transactionsService.findAllChildTransactions(childId);
   }
+  
 
   @Patch(':id')
   update(

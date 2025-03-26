@@ -29,9 +29,10 @@ export class ChildBalanceService {
 
     const newTransaction: Transaction = new Transaction(
       childBalance!.balance_id,
-      TransactionType.REQUEST_FOR_PAYMENT,
+      TransactionType.STORE_PURCHASE,
       paymentRequestDto.amount,
       paymentRequestDto.description,
+      TransactionStatus.PENDING_PARENT_APPROVAL
     );
 
     await this.transactionsRepository.save(newTransaction);
@@ -71,16 +72,16 @@ export class ChildBalanceService {
       childBalance.balance_id,
       TransactionType.STORE_PURCHASE,
       1,
-      'רכישה באשראי'
+      'רכישה באשראי',
+      TransactionStatus.PENDING_STORE
     );
   
-    transaction.status = TransactionStatus.PENDING_STORE;
     const savedTransaction = await this.transactionsRepository.save(transaction);
 
     childBalance.balance_amount -= 1;
     await this.childBalanceRepository.save(childBalance);
   
-    savedTransaction.status = TransactionStatus.APPROVED;
+    savedTransaction.status = TransactionStatus.COMPLETED;
     await this.transactionsRepository.save(savedTransaction);
   
     return childBalance;

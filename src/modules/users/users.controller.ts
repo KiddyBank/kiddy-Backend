@@ -5,6 +5,11 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Get('parents/:parentId/children-playment-requests')
+  getChildrenPaymentRequests(@Param('parentId') parentId: string) {  
+    return this.usersService.getChildrenPaymentReuqests(parentId);
+  }
+
   @Get('balance/:userId')
   getBalance(@Param('userId') userId: string) {
     return this.usersService.getBalance(userId);
