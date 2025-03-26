@@ -38,10 +38,16 @@ export class UsersService {
     }
   }
 
-  async getFixedTransactions(balanceId: number) {
+  async getFixedTransactions(balanceId: number, transactionType?:string, transactionStatus?:string) {
+
     try {
+      const whereConditions: any = { balance_id: balanceId };
+
+      if (transactionType) whereConditions.type = transactionType;
+      if (transactionStatus) whereConditions.status = transactionStatus;
+  
       const transactions = await this.transactionsRepository.find({
-        where: { balance_id: balanceId },
+        where: whereConditions,
         order: { created_at: 'DESC' },
       });
 
@@ -87,18 +93,37 @@ export class UsersService {
   }
 
 
-  async deductBalance(userId: string, amount: number) {
+  async deductBalance(userId: string, transactionId: string) {
     try {
       const balance = await this.balanceRepository.findOne({
         where: { child_id: userId },
       });
-  
+
+      const transaction = await this.transactionsRepository.findOne({
+        where: { transaction_id: transactionId }
+      });
+
       if (!balance) {
         return { success: false, message: 'Balance not found' };
       }
 
-      balance.balance_amount -= amount;
+      if (!transaction) {
+        return { success: false, message: 'Balance not found' };
+      }
+
+      if (balance.balance_id !== transaction!.balance_id) {
+        return { success: false, message: 'Cant pay for whats not yours!' };
+        
+      }
+
+      balance.balance_amount -= transaction.amount;
+      console.log(balance);
       await this.balanceRepository.save(balance);
+      transaction!.status=TransactionStatus.COMPLETED;
+      console.log(transaction);
+      await this.transactionsRepository.save(transaction);
+
+
   
       return { success: true, newBalance: balance.balance_amount };
     } catch (error) {

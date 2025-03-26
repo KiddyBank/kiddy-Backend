@@ -1,6 +1,7 @@
-import { Controller, Get, Param, Patch, Body, Post } from '@nestjs/common';
+import { Controller, Get, Param, Patch, Body, Post, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { PaymentAcceptDto } from './dto/payment-accept.dto';
+import { PerformPaymentDto } from './dto/perform-payment.dto';
 
 @Controller('users')
 export class UsersController {
@@ -28,9 +29,9 @@ export class UsersController {
   }
 
   @Get('transactions')
-  getFixedTransactions() {
+  getFixedTransactions(@Query('transaction_type') transaction_type?:string, @Query('transaction_status') transaction_status?:string) {
     const fixedBalanceId =  Number(process.env.DEFAULT_BALANCE_ID); // balance_id דיפולטי
-    return this.usersService.getFixedTransactions(fixedBalanceId) ;
+    return this.usersService.getFixedTransactions(fixedBalanceId, transaction_type, transaction_status); ;
   } 
 
   @Get('tasks')
@@ -44,11 +45,11 @@ export class UsersController {
     return 'Controller working!';
   }
 
-  @Patch('balance/:userId')
+  @Post('perform-payment/:userId')
   async updateBalance(
     @Param('userId') userId: string,
-    @Body('amount') amount: number,
+    @Body() performPaymentDto: PerformPaymentDto
   ) {
-    return await this.usersService.deductBalance(userId, amount);
+    return await this.usersService.deductBalance(userId, performPaymentDto.transactionId);
   }
 }
