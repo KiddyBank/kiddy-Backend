@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Patch, Body } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { PaymentAcceptDto } from './dto/payment-accept.dto';
 
 @Controller('users')
 export class UsersController {
@@ -13,6 +14,11 @@ export class UsersController {
   @Get('balance/:userId')
   getBalance(@Param('userId') userId: string) {
     return this.usersService.getBalance(userId);
+  }
+
+  @Post('parents/:parentId/accept-payment-request')
+  approveChildPaymentRequest(@Param('userId') parentId: string, @Body() paymentRequestDto: PaymentAcceptDto) {  
+    this.usersService.approveChildPaymentReuqest(parentId, paymentRequestDto.transactionId);
   }
 
   @Get('balance')

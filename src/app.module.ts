@@ -5,6 +5,7 @@ import { ChildBalanceModule } from './modules/child-balance/child-balance.module
 import { FamilyModule } from './modules/family/family.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { UsersModule } from './modules/users/users.module';
+import { TasksModule } from './modules/tasks/tasks.module';
 
 @Module({
   imports: [
@@ -26,7 +27,8 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
     ChildBalanceModule,
     FamilyModule,
-    TransactionsModule
+    TransactionsModule,
+    TasksModule
     
   ],
 })

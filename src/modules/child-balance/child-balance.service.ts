@@ -5,9 +5,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChildBalance } from './entities/child-balance.entity';
 import { PaymentRequestDto } from './dto/payment-request.dto';
-import {Transaction, TransactionType,} from '../transactions/entities/transaction.entity';
-import { TransactionStatus } from '../transactions/entities/transaction.entity';
-
+import {
+  Transaction,
+  TransactionStatus,
+  TransactionType,
+} from '../transactions/entities/transaction.entity';
 
 @Injectable()
 export class ChildBalanceService {
@@ -30,8 +32,10 @@ export class ChildBalanceService {
     const newTransaction: Transaction = new Transaction(
       childBalance!.balance_id,
       TransactionType.STORE_PURCHASE,
+      TransactionType.STORE_PURCHASE,
       paymentRequestDto.amount,
       paymentRequestDto.description,
+      TransactionStatus.PENDING_PARENT_APPROVAL
       TransactionStatus.PENDING_PARENT_APPROVAL
     );
 

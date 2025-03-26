@@ -23,6 +23,7 @@ export enum TransactionStatus{
 export class Transaction {
 
 constructor(childId: number, transactionType: TransactionType, amount: number, description: string, status: TransactionStatus) {
+constructor(childId: number, transactionType: TransactionType, amount: number, description: string, status: TransactionStatus) {
         this.balance_id = childId;
         this.type=transactionType;
         this.amount=amount;
@@ -51,6 +52,7 @@ constructor(childId: number, transactionType: TransactionType, amount: number, d
 
   @Column({
     type: 'enum',
+    enum: TransactionStatus
     enum: TransactionStatus
 })
   status: TransactionStatus;
