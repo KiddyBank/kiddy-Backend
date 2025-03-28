@@ -7,7 +7,8 @@ export enum TransactionType{
     GOAL_DEPOSIT = 'goal_deposit',
     GOAL_WITHDRAW = 'goal_withdraw',
     STORE_PURCHASE = 'store_purchase',
-    STORE_REFUND = 'store_refund'
+    STORE_REFUND = 'store_refund',
+    REQUEST_FOR_PAYMENT ='request_for_payment' 
 }
 
 export enum TransactionStatus{

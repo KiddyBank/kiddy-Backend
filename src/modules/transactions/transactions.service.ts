@@ -4,7 +4,9 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChildBalance } from '../child-balance/entities/child-balance.entity';
-import { Transaction } from './entities/transaction.entity';
+import { Transaction, TransactionType } from './entities/transaction.entity';
+import { Not } from 'typeorm';
+
 
 @Injectable()
 export class TransactionsService {
@@ -22,11 +24,13 @@ export class TransactionsService {
   }
 
   async findAllChildTransactions(childBalanceId: string) {
-  
     const childBalance =  await this.childBalanceRepository.findOne({ where: { child_id: childBalanceId } });
-
     return await this.transactionsRepository.find({
-      where: { balance_id: childBalance!.balance_id }});
+      where: { 
+        balance_id: childBalance!.balance_id,
+        type: Not(TransactionType.REQUEST_FOR_PAYMENT)
+      },
+    });
 }
 
 

@@ -2,6 +2,7 @@ import { User } from "src/modules/users/user.entity";
 import { Entity, PrimaryGeneratedColumn, Column, UpdateDateColumn, OneToOne, JoinColumn  } from "typeorm";
 
 @Entity({ schema: 'finance', name: 'child_balance' })
+
 export class ChildBalance {
 
   @PrimaryGeneratedColumn()
@@ -20,5 +21,7 @@ export class ChildBalance {
 
   @Column({default: true})
   is_active: boolean;
+
+
   
 }
