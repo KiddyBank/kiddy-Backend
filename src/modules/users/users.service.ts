@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { FindOptionsWhere, In, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { ChildBalance } from '../child-balance/entities/child-balance.entity';
-import { Transaction, TransactionStatus } from '../transactions/entities/transaction.entity'; 
+import { Transaction, TransactionStatus, TransactionType } from '../transactions/entities/transaction.entity'; 
 import { Task } from '../tasks/entities/task.entity'; 
 
 @Injectable()
@@ -22,11 +22,21 @@ export class UsersService {
     private tasksRepository: Repository<Task>, 
   ) {}
 
+
+  async getChildBalanceFromUuid(userId: string):Promise<ChildBalance> {
+    return await this.balanceRepository.findOne({
+      where: { child_id: userId },
+    }).then(balance => {
+      if (!balance) {
+        throw new Error('Balance not found');
+      }
+      return balance;
+    });
+  }
+
   async getBalance(userId: string) {
     try {
-      const balance = await this.balanceRepository.findOne({
-        where: { child_id: userId },
-      });
+      const balance = await this.getChildBalanceFromUuid(userId);
 
       if (!balance) {
         return { balance: 0, message: 'Balance not found' };
@@ -38,14 +48,17 @@ export class UsersService {
     }
   }
 
-  async getFixedTransactions(balanceId: number, transactionType?:string, transactionStatus?:string) {
+  async getTransactions(childId: string, transactionType?:string, transactionStatus?:string) {
 
     try {
-      const whereConditions: any = { balance_id: balanceId };
+      const balanceId = (await this.getChildBalanceFromUuid(childId)).balance_id;
 
-      if (transactionType) whereConditions.type = transactionType;
-      if (transactionStatus) whereConditions.status = transactionStatus;
-  
+      const whereConditions: FindOptionsWhere<Transaction> = {
+        balance_id: balanceId,
+        ...(transactionType && { type: transactionType as TransactionType }),
+        ...(transactionStatus && { status: transactionStatus as TransactionStatus }),
+      };
+
       const transactions = await this.transactionsRepository.find({
         where: whereConditions,
         order: { created_at: 'DESC' },
@@ -57,8 +70,10 @@ export class UsersService {
     }
   }
 
-  async getFixedTasks(balanceId: number) {
+  async getTasks(childId: string) {
     try {
+      const balanceId = (await this.getChildBalanceFromUuid(childId)).balance_id;
+
       const tasks = await this.tasksRepository.find({
         where: { balance_id: balanceId },
       });
@@ -79,7 +94,6 @@ export class UsersService {
     return childMetadata!.family_id;
 }
 
-
   async getChildsFamilyId(balanceId: number):Promise<number> {
 
       const childBalance = await this.balanceRepository.findOne({
@@ -92,58 +106,56 @@ export class UsersService {
 
   }
 
+    async deductBalance(childId: string, transactionId: string) {
+      try {
 
-  async deductBalance(userId: string, transactionId: string) {
-    try {
-      const balance = await this.balanceRepository.findOne({
-        where: { child_id: userId },
-      });
+        const balance = await this.getChildBalanceFromUuid(childId);
 
-      const transaction = await this.transactionsRepository.findOne({
-        where: { transaction_id: transactionId }
-      });
+        console.log('Balance:', balance);
+        console.log('Transaction ID:', transactionId);
 
-      if (!balance) {
-        return { success: false, message: 'Balance not found' };
-      }
+        const transaction = await this.transactionsRepository.findOne({
+          where: { transaction_id: transactionId }
+        });
 
-      if (!transaction) {
-        return { success: false, message: 'Balance not found' };
-      }
+        console.log('Transaction:', transaction);
 
-      if (balance.balance_id !== transaction!.balance_id) {
-        return { success: false, message: 'Cant pay for whats not yours!' };
+        if (!balance) {
+          return { success: false, message: 'Balance not found' };
+        }
+
+        if (!transaction) {
+          return { success: false, message: 'Transaction not found' };
+        }
+
+        if (balance.balance_id !== transaction!.balance_id) {
+          return { success: false, message: 'Cant pay for whats not yours!' };
+          
+        }
+
+        balance.balance_amount -= transaction.amount;
+        await this.balanceRepository.save(balance);
+        transaction!.status=TransactionStatus.COMPLETED;
+        await this.transactionsRepository.save(transaction);
+
+        console.log('Transaction completed:', transaction);
+    
+        return { success: true, newBalance: balance.balance_amount };
+
         
+      } catch (error) {
+        console.error('❌ Error updating balance:', error);
+        throw error;
       }
-
-      balance.balance_amount -= transaction.amount;
-      console.log(balance);
-      await this.balanceRepository.save(balance);
-      transaction!.status=TransactionStatus.COMPLETED;
-      console.log(transaction);
-      await this.transactionsRepository.save(transaction);
-
-
-  
-      return { success: true, newBalance: balance.balance_amount };
-    } catch (error) {
-      console.error('❌ Error updating balance:', error);
-      throw error;
     }
-  }
 
-  
   async approveChildPaymentReuqest(parentId:string, childTransactionId: string) {
-
-    console.log(childTransactionId)
 
       const pendingTransaction = await this.transactionsRepository.findOne({
         where: { transaction_id: childTransactionId }
       });
 
-
       const childFamilyId: number = await this.getChildsFamilyId(pendingTransaction!.balance_id)
-
       const parentFamilyId: number = await this.getUserFamilyId(parentId)
 
       if (childFamilyId !== parentFamilyId) {
@@ -161,8 +173,6 @@ export class UsersService {
   async getChildrenPaymentReuqests(parentId:string) {
 
     const parentFamilyId: number = await this.getUserFamilyId(parentId)
-
-
     const familyChildren = await this.usersRepository.find({  where: { family_id: parentFamilyId } });
 
 

@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch, Body, Post, Query } from '@nestjs/common';
+import { Controller, Get, Param, Body, Post, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { PaymentAcceptDto } from './dto/payment-accept.dto';
 import { PerformPaymentDto } from './dto/perform-payment.dto';
@@ -17,39 +17,31 @@ export class UsersController {
     this.usersService.approveChildPaymentReuqest(parentId, paymentRequestDto.transactionId);
   }
 
-  @Get('balance/:userId')
-  getBalance(@Param('userId') userId: string) {
-    return this.usersService.getBalance(userId);
+  @Get('balance/:childId')
+  getBalance(@Param('childId') childId: string) {
+    return this.usersService.getBalance(childId);
   }
 
-  @Get('balance')
-  getFixedBalance() {
-    const fixedUserId = process.env.DEFAULT_CHILD_ID as string; // ילד דיפולטי
-    return this.usersService.getBalance(fixedUserId);
+  @Get('balance/:childId')
+  getFixedBalance(@Param('childId') childId: string) {
+    return this.usersService.getBalance(childId);
   }
 
-  @Get('transactions')
-  getFixedTransactions(@Query('transaction_type') transaction_type?:string, @Query('transaction_status') transaction_status?:string) {
-    const fixedBalanceId =  Number(process.env.DEFAULT_BALANCE_ID); // balance_id דיפולטי
-    return this.usersService.getFixedTransactions(fixedBalanceId, transaction_type, transaction_status); ;
+  @Get('transactions/:childId')
+  getFixedTransactions(@Param('childId') childId: string, @Query('transaction_type') transaction_type?:string, @Query('transaction_status') transaction_status?:string) {
+    return this.usersService.getTransactions(childId, transaction_type, transaction_status); ;
   } 
 
-  @Get('tasks')
-  getFixedTasks() {
-    const fixedBalanceId =  Number(process.env.DEFAULT_BALANCE_ID); // balance_id דיפולטי
-    return this.usersService.getFixedTasks(fixedBalanceId);
+  @Get('tasks/:childId')
+  getFixedTasks(@Param('childId') childId: string) {
+    return this.usersService.getTasks(childId);
   }
 
-  @Get('test')
-  test() {
-    return 'Controller working!';
-  }
-
-  @Post('perform-payment/:userId')
+  @Post('perform-payment/:childId')
   async updateBalance(
-    @Param('userId') userId: string,
+    @Param('childId') childId: string,
     @Body() performPaymentDto: PerformPaymentDto
   ) {
-    return await this.usersService.deductBalance(userId, performPaymentDto.transactionId);
+    return await this.usersService.deductBalance(childId, performPaymentDto.transactionId);
   }
 }
