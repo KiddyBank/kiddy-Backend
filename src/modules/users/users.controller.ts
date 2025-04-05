@@ -7,7 +7,7 @@ import { PerformPaymentDto } from './dto/perform-payment.dto';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Get('parents/:parentId/children-playment-requests')
+  @Get('parents/:parentId/children-payment-requests')
   getChildrenPaymentRequests(@Param('parentId') parentId: string) {  
     return this.usersService.getChildrenPaymentReuqests(parentId);
   }
