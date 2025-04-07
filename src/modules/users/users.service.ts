@@ -128,8 +128,9 @@ export class UsersService {
           return { success: false, message: 'Transaction not found' };
         }
 
+
         if (balance.balance_id !== transaction!.balance_id) {
-          return { success: false, message: 'Cant pay for whats not yours!' };
+          return { success: false, message: `Cant pay for whats not yours! ${balance.balance_id}, ${transaction!.balance_id}` };
           
         }
 

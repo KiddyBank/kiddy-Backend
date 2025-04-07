@@ -12,7 +12,7 @@ export enum TransactionType{
 
 export enum TransactionStatus{
     PENDING_PARENT_APPROVAL = 'PENDING_PARENT_APPROVAL',
-    APPORVED_BY_PARENT = 'APPORVED_BY_PARENT',
+    APPORVED_BY_PARENT = 'APPROVED_BY_PARENT',
     PENDING_STORE = 'PENDING_STORE',
     FAILED = 'FAILED',
     REJECTED = 'REJECTED',
@@ -22,8 +22,8 @@ export enum TransactionStatus{
 @Entity({ schema: 'finance', name: 'transactions' })
 export class Transaction {
 
-constructor(childId: number, transactionType: TransactionType, amount: number, description: string, status: TransactionStatus) {
-        this.balance_id = childId;
+constructor(balanceId: number, transactionType: TransactionType, amount: number, description: string, status: TransactionStatus) {
+        this.balance_id = balanceId
         this.type=transactionType;
         this.amount=amount;
         this.description = description;
