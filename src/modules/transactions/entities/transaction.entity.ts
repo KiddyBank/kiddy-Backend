@@ -23,7 +23,7 @@ export enum TransactionStatus{
 export class Transaction {
 
 constructor(balanceId: number, transactionType: TransactionType, amount: number, description: string, status: TransactionStatus) {
-        this.balance_id = balanceId
+        this.child_balance = { balance_id: balanceId } as ChildBalance;
         this.type=transactionType;
         this.amount=amount;
         this.description = description;
@@ -39,8 +39,11 @@ constructor(balanceId: number, transactionType: TransactionType, amount: number,
   })
   type: TransactionType;
 
-  @ManyToOne(() => ChildBalance, (childBalance) => childBalance.balance_id)
+  @ManyToOne(() => ChildBalance, (childBalance) => childBalance.balance_id, {eager: true})
   @JoinColumn({name: 'balance_id'})
+  child_balance: ChildBalance;
+
+  @Column()
   balance_id: number;
 
   @Column({type: 'double precision', default: 0})

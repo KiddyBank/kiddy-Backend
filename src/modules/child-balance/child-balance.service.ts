@@ -26,7 +26,7 @@ export class ChildBalanceService {
     paymentRequestDto: PaymentRequestDto,
   ) {
     const childBalance = await this.childBalanceRepository.findOne({
-      where: { child_id: childId },
+      where: { child_user:{user_id: childId }},
     });
 
     const newTransaction: Transaction = new Transaction(
@@ -60,32 +60,4 @@ export class ChildBalanceService {
     return `This action removes a #${id} childBalance`;
   }
 
-  async chargeOneShekel(childId: string) {
-  
-    const childBalance = await this.childBalanceRepository.findOne({
-      where: { child_id: childId },
-    });
-  
-    if (!childBalance) {
-      throw new Error("ילד לא נמצא");
-    }
-  
-    const transaction = new Transaction(
-      childBalance.balance_id,
-      TransactionType.STORE_PURCHASE,
-      1,
-      'רכישה באשראי',
-      TransactionStatus.PENDING_STORE
-    );
-  
-    const savedTransaction = await this.transactionsRepository.save(transaction);
-
-    childBalance.balance_amount -= 1;
-    await this.childBalanceRepository.save(childBalance);
-  
-    savedTransaction.status = TransactionStatus.COMPLETED;
-    await this.transactionsRepository.save(savedTransaction);
-  
-    return childBalance;
-  }
 }

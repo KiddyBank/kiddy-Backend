@@ -46,8 +46,11 @@ export class User {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @ManyToOne(() => Family, (family) => family.id)
+  @ManyToOne(() => Family, (family) => family.id, { eager: true })
   @JoinColumn({ name: 'family_id' })
+  family: Family;
+
+  @Column()
   family_id: number;
 
   @Column()

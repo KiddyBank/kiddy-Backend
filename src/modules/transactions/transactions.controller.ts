@@ -20,11 +20,6 @@ export class TransactionsController {
     return this.transactionsService.create(createTransactionDto);
   }
 
-  @Get(':childId')
-  findAllChildTransactions(@Param('childId') childId: string) {
-    return this.transactionsService.findAllChildTransactions(childId);
-  }
-  
 
   @Patch(':id')
   update(

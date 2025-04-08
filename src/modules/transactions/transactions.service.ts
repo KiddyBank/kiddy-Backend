@@ -21,14 +21,6 @@ export class TransactionsService {
     return 'This action adds a new transaction';
   }
 
-  async findAllChildTransactions(childBalanceId: string) {
-  
-    const childBalance =  await this.childBalanceRepository.findOne({ where: { child_id: childBalanceId } });
-
-    return await this.transactionsRepository.find({
-      where: { balance_id: childBalance!.balance_id }});
-}
-
 
   findOne(id: number) {
     return `This action returns a #${id} transaction`;
