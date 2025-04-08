@@ -9,12 +9,6 @@ import { PaymentRequestDto } from './dto/payment-request.dto';
 export class ChildBalanceController {
   constructor(private readonly childBalanceService: ChildBalanceService) {}
 
-  @Patch('charge-one-shekel')
-  async chargeOneShekel() {
-    const childId = process.env.DEFAULT_CHILD_ID as string; 
-    return this.childBalanceService.chargeOneShekel(childId);
-  }
-
   @Post('place-payment-request/:childId')
   placePaymentRequest(@Param('childId') childId: string, @Body() paymentRequestDto: PaymentRequestDto) {
     return this.childBalanceService.placePaymentRequest(childId, paymentRequestDto);

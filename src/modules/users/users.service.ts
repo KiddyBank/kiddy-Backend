@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { FindOptionsWhere, In, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { ChildBalance } from '../child-balance/entities/child-balance.entity';
-import { Transaction, TransactionStatus } from '../transactions/entities/transaction.entity'; 
+import { Transaction, TransactionStatus, TransactionType } from '../transactions/entities/transaction.entity'; 
 import { Task } from '../tasks/entities/task.entity'; 
 
 @Injectable()
@@ -22,11 +22,22 @@ export class UsersService {
     private tasksRepository: Repository<Task>, 
   ) {}
 
+
+  async getChildBalanceFromUuid(userId: string):Promise<ChildBalance> {
+    return await this.balanceRepository.findOne({
+      where: { child_user: { user_id: userId } },
+    }).then(balance => {
+      if (!balance) {
+        throw new Error('Balance not found');
+      }
+      return balance;
+    });
+  }
+
+
   async getBalance(userId: string) {
     try {
-      const balance = await this.balanceRepository.findOne({
-        where: { child_id: userId },
-      });
+      const balance = await this.getChildBalanceFromUuid(userId);
 
       if (!balance) {
         return { balance: 0, message: 'Balance not found' };
@@ -38,10 +49,19 @@ export class UsersService {
     }
   }
 
-  async getFixedTransactions(balanceId: number) {
+  async getTransactions(childId: string, transactionType?:string, transactionStatus?:string) {
+
     try {
+      const childBalance = (await this.getChildBalanceFromUuid(childId));
+
+      const whereConditions: FindOptionsWhere<Transaction> = {
+        balance_id: childBalance.balance_id,
+        ...(transactionType && { type: transactionType as TransactionType }),
+        ...(transactionStatus && { status: transactionStatus as TransactionStatus }),
+      };
+
       const transactions = await this.transactionsRepository.find({
-        where: { balance_id: balanceId },
+        where: whereConditions,
         order: { created_at: 'DESC' },
       });
 
@@ -51,8 +71,10 @@ export class UsersService {
     }
   }
 
-  async getFixedTasks(balanceId: number) {
+  async getTasks(childId: string) {
     try {
+      const balanceId = (await this.getChildBalanceFromUuid(childId)).balance_id;
+
       const tasks = await this.tasksRepository.find({
         where: { balance_id: balanceId },
       });
@@ -64,62 +86,50 @@ export class UsersService {
     }
   }
 
-  async getUserFamilyId(userId: string):Promise<number> {
+    async deductBalance(childId: string, transactionId: string) {
+      try {
 
-    const childMetadata = await this.usersRepository.findOne({
-      where: { user_id: userId },
-    });
+        const balance = await this.getChildBalanceFromUuid(childId);
+        const transaction = await this.transactionsRepository.findOne({
+          where: { transaction_id: transactionId }
+        });
+        
+        if (!balance) {
+          return { success: false, message: 'Balance not found' };
+        }
 
-    return childMetadata!.family_id;
-}
+        if (!transaction) {
+          return { success: false, message: 'Transaction not found' };
+        }
 
+        if (balance.balance_id !== transaction!.child_balance.balance_id) {
+          return { success: false, message: `Cant pay for whats not yours! ${balance.balance_id}, ${transaction!.child_balance.balance_id}` };
+          
+        }
 
-  async getChildsFamilyId(balanceId: number):Promise<number> {
+        balance.balance_amount -= transaction.amount;
+        await this.balanceRepository.save(balance);
+        transaction!.status=TransactionStatus.COMPLETED;
+        await this.transactionsRepository.save(transaction);
+        return { success: true, newBalance: balance.balance_amount };
 
-      const childBalance = await this.balanceRepository.findOne({
-        where: { balance_id: balanceId },
-      });
-
-      const childsId = childBalance!.child_id
-
-      return await this.getUserFamilyId(childsId)
-
-  }
-
-
-  async deductBalance(userId: string, amount: number) {
-    try {
-      const balance = await this.balanceRepository.findOne({
-        where: { child_id: userId },
-      });
-  
-      if (!balance) {
-        return { success: false, message: 'Balance not found' };
+      } catch (error) {
+        console.error('❌ Error updating balance:', error);
+        throw error;
       }
-
-      balance.balance_amount -= amount;
-      await this.balanceRepository.save(balance);
-  
-      return { success: true, newBalance: balance.balance_amount };
-    } catch (error) {
-      console.error('❌ Error updating balance:', error);
-      throw error;
     }
-  }
 
-  
   async approveChildPaymentReuqest(parentId:string, childTransactionId: string) {
-
-    console.log(childTransactionId)
 
       const pendingTransaction = await this.transactionsRepository.findOne({
         where: { transaction_id: childTransactionId }
       });
 
+      const child = await this.usersRepository.findOne({ where: { user_id: pendingTransaction!.child_balance.child_user.user_id }});
+      const parent = await this.usersRepository.findOne({ where: { user_id: parentId }});
 
-      const childFamilyId: number = await this.getChildsFamilyId(pendingTransaction!.balance_id)
-
-      const parentFamilyId: number = await this.getUserFamilyId(parentId)
+      const childFamilyId: number = child?.family.id!;
+      const parentFamilyId: number = parent?.family.id!;
 
       if (childFamilyId !== parentFamilyId) {
         console.error('❌ Mismatch between parent and child family id');
@@ -134,21 +144,25 @@ export class UsersService {
   }
 
   async getChildrenPaymentReuqests(parentId:string) {
+    const parentUser = await this.usersRepository.findOne({where: { user_id: parentId }});
+    const parentFamilyId: number = parentUser!.family.id;
 
-    const parentFamilyId: number = await this.getUserFamilyId(parentId)
-
-
-    const familyChildren = await this.usersRepository.find({  where: { family_id: parentFamilyId } });
-
+    const familyChildren = await this.usersRepository.find({
+      where: { family: { id: parentFamilyId } } });
 
     const familyChildrenBalance = await this.balanceRepository.find({
-      where: { child_id: In(familyChildren.map(child => child.user_id)) }
+      where: {
+        child_user: {
+          user_id: 
+             In(familyChildren.map(child => child.user_id))
+        }
+      }
     });
 
     return await this.transactionsRepository.find({
       where: { balance_id: In(familyChildrenBalance.map(child => child.balance_id)),
                status: TransactionStatus.PENDING_PARENT_APPROVAL }
        });
-    };
-
+  
+  }
 }

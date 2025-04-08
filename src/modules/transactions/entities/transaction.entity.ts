@@ -12,7 +12,7 @@ export enum TransactionType{
 
 export enum TransactionStatus{
     PENDING_PARENT_APPROVAL = 'PENDING_PARENT_APPROVAL',
-    APPORVED_BY_PARENT = 'APPORVED_BY_PARENT',
+    APPORVED_BY_PARENT = 'APPROVED_BY_PARENT',
     PENDING_STORE = 'PENDING_STORE',
     FAILED = 'FAILED',
     REJECTED = 'REJECTED',
@@ -22,8 +22,8 @@ export enum TransactionStatus{
 @Entity({ schema: 'finance', name: 'transactions' })
 export class Transaction {
 
-constructor(childId: number, transactionType: TransactionType, amount: number, description: string, status: TransactionStatus) {
-        this.balance_id = childId;
+constructor(balanceId: number, transactionType: TransactionType, amount: number, description: string, status: TransactionStatus) {
+        this.child_balance = { balance_id: balanceId } as ChildBalance;
         this.type=transactionType;
         this.amount=amount;
         this.description = description;
@@ -39,8 +39,11 @@ constructor(childId: number, transactionType: TransactionType, amount: number, d
   })
   type: TransactionType;
 
-  @ManyToOne(() => ChildBalance, (childBalance) => childBalance.balance_id)
+  @ManyToOne(() => ChildBalance, (childBalance) => childBalance.balance_id, {eager: true})
   @JoinColumn({name: 'balance_id'})
+  child_balance: ChildBalance;
+
+  @Column()
   balance_id: number;
 
   @Column({type: 'double precision', default: 0})

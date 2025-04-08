@@ -1,5 +1,5 @@
 import { Subscription } from "src/modules/subscriptions/entities/subscription.entity";
-import { Entity, PrimaryGeneratedColumn, Column, UpdateDateColumn, CreateDateColumn, OneToOne  } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, UpdateDateColumn, CreateDateColumn, OneToOne, JoinColumn  } from "typeorm";
 
 @Entity({ schema: 'finance', name: 'family' })
 export class Family {
@@ -11,7 +11,10 @@ export class Family {
   name: string;
 
   @OneToOne(() => Subscription, (subscription) => subscription.subscription_id)
-  @Column()
+  @JoinColumn({ name: 'subscription_plan_id' })
+  subscription: Family;
+
+@Column()
   subscription_plan_id: number;
 
   @Column()
