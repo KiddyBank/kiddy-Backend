@@ -12,10 +12,11 @@ export class UsersController {
     return this.usersService.getChildrenPaymentReuqests(parentId);
   }
 
-  @Post('parents/:parentId/accept-payment-request')
-  approveChildPaymentRequest(@Param('userId') parentId: string, @Body() paymentRequestDto: PaymentAcceptDto) {  
-    this.usersService.approveChildPaymentReuqest(parentId, paymentRequestDto.transactionId);
+  @Post('parents/:parentId/handle-payment-request')
+  handleChildPaymentRequest(@Param('parentId') parentId: string, @Body() body: { transactionId: string; action: 'approve' | 'reject' }) {
+    return this.usersService.handleChildPaymentRequest(parentId, body.transactionId, body.action);
   }
+  
 
   @Get('balance/:childId')
   getBalance(@Param('childId') childId: string) {
@@ -44,4 +45,11 @@ export class UsersController {
   ) {
     return await this.usersService.deductBalance(childId, performPaymentDto.transactionId);
   }
+
+  @Get('parents/:parentId/children')
+    getChildrenOfParent(@Param('parentId') parentId: string) {
+    return this.usersService.getChildrenOfParent(parentId);
+  }
+
 }
+
