@@ -5,6 +5,7 @@ import { ChildBalance } from '../child-balance/entities/child-balance.entity';
 import { Transaction, TransactionStatus, TransactionType } from '../transactions/entities/transaction.entity'; 
 import { Task } from '../tasks/entities/task.entity'; 
 import { User, UserRole } from './user.entity';
+import { StandingOrdersService } from '../standing-orders/standing-orders.service';
 
 @Injectable()
 export class UsersService {
@@ -20,6 +21,8 @@ export class UsersService {
 
     @InjectRepository(Task)
     private tasksRepository: Repository<Task>, 
+
+    private readonly standingOrdersService: StandingOrdersService,
   ) {}
 
 
@@ -73,8 +76,9 @@ export class UsersService {
 
   async getTasks(childId: string) {
     try {
+     
       const balanceId = (await this.getChildBalanceFromUuid(childId)).balance_id;
-
+      
       const tasks = await this.tasksRepository.find({
         where: { balance_id: balanceId },
       });
@@ -210,7 +214,6 @@ export class UsersService {
 
 
   async getChildrenOfParent(parentId: string) {
-    
     const parent = await this.usersRepository.findOne({
       where: { user_id: parentId, user_role: UserRole.PARENT },
     });
@@ -219,7 +222,6 @@ export class UsersService {
       throw new Error('Parent not found');
     }
   
-    // שליפת כל המשתמשים מהמשפחה שהם ילדים
     const children = await this.usersRepository.find({
       where: {
         family_id: parent.family_id,
@@ -227,7 +229,6 @@ export class UsersService {
       },
     });
   
-    // שליפת היתרות של הילדים
     const balances = await this.balanceRepository.find({
       where: {
         child_user: In(children.map((child) => child.user_id)),
@@ -236,14 +237,54 @@ export class UsersService {
     });
   
     const balanceMap = new Map(
-      balances.map((b) => [b.child_user.user_id, b.balance_amount])
+      balances.map((b) => [
+        b.child_user.user_id,
+        {
+          amount: b.balance_amount,
+          id: b.balance_id,
+        },
+      ])
     );
   
-    return children.map((child) => ({
-      name: child.username,
-      imageUrl: `http://${process.env.HOST || 'localhost'}:3000/static${child.avatar_path || '/avatars/avatar-boy.png'}`,
-      balance: balanceMap.get(child.user_id) || 0,
-    }));
+    // 🧠 שימוש ב־StandingOrdersService עבור כל balanceId
+    const standingOrders = await Promise.all(
+      balances.map((b) => this.standingOrdersService.findByBalanceId(b.balance_id))
+    );
+  
+    const standingMap = new Map(
+      standingOrders
+        .filter(Boolean)
+        .map((order) => [
+          order!.balanceId,
+          {
+            amount: order!.amount,
+            interval: order!.daysFrequency,
+          },
+        ])
+    );
+  
+    return children.map((child) => {
+      const balanceInfo = balanceMap.get(child.user_id);
+      const standing = balanceInfo?.id ? standingMap.get(balanceInfo.id) : null;
+      
+      return {
+        id: child.user_id,
+        name: child.username,
+        imageUrl: `http://${process.env.HOST || 'localhost'}:3000/static${child.avatar_path || '/avatars/avatar-boy.png'}`,
+        balance: balanceInfo?.amount || 0,
+        balanceId: balanceInfo?.id || null,
+        allowanceAmount: standing?.amount || null,
+        allowanceInterval:
+          standing?.interval === 30
+            ? 'monthly'
+            : standing?.interval === 7
+            ? 'weekly'
+            : standing?.interval
+            ? 'test'
+            : undefined,
+      };
+    });
   }
-
-}
+  
+    
+  }

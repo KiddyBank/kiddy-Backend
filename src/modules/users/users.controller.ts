@@ -16,12 +16,6 @@ export class UsersController {
   handleChildPaymentRequest(@Param('parentId') parentId: string, @Body() body: { transactionId: string; action: 'approve' | 'reject' }) {
     return this.usersService.handleChildPaymentRequest(parentId, body.transactionId, body.action);
   }
-  
-
-  @Get('balance/:childId')
-  getBalance(@Param('childId') childId: string) {
-    return this.usersService.getBalance(childId);
-  }
 
   @Get('balance/:childId')
   getFixedBalance(@Param('childId') childId: string) {
