@@ -12,5 +12,6 @@ import { Task } from '../tasks/entities/task.entity';
   imports: [TypeOrmModule.forFeature([User, ChildBalance, Transaction, Task])],
   controllers: [UsersController],
   providers: [UsersService],
+  exports: [UsersService]
 })
 export class UsersModule {}

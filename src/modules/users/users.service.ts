@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, In, Repository } from 'typeorm';
-import { User } from './user.entity';
+import { User, UserRole } from './user.entity';
 import { ChildBalance } from '../child-balance/entities/child-balance.entity';
 import { Transaction, TransactionStatus, TransactionType } from '../transactions/entities/transaction.entity'; 
 import { Task } from '../tasks/entities/task.entity'; 
@@ -22,7 +22,20 @@ export class UsersService {
     private tasksRepository: Repository<Task>, 
   ) {}
 
-
+  async findByEmail(email: string): Promise<User | null> {
+    return await this.usersRepository.findOne({
+      where: { email }
+    });
+  }
+  
+  async createParent(dto: Partial<User>): Promise<User> {
+    const newUser = this.usersRepository.create({
+      ...dto,
+      user_role: UserRole.PARENT,
+    });
+    return await this.usersRepository.save(newUser);
+  }
+  
   async getChildBalanceFromUuid(userId: string):Promise<ChildBalance> {
     return await this.balanceRepository.findOne({
       where: { child_user: { user_id: userId } },
