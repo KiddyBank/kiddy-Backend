@@ -13,22 +13,27 @@ export class StandingOrdersService {
   ) {}
 
   async create(dto: CreateStandingOrderDto) {
-    const balanceId = dto.balanceId;
-
-    if (!balanceId) {
-      throw new Error('Balance ID is required');
+    const existing = await this.findByBalanceId(dto.balanceId);
+  
+    if (existing) {
+      // לסגור את הרשומה הקודמת
+      existing.status = 'complete'; 
+      existing.finishDate = new Date();
+      await this.repo.save(existing);
     }
-
-    const standingOrder = this.repo.create({
-      balanceId,
+  
+    // יצירת רשומה חדשה
+    const newOrder = this.repo.create({
+      balanceId: dto.balanceId,
       amount: dto.amount,
       daysFrequency: dto.daysFrequency,
       startDate: new Date(dto.startDate),
       status: 'active',
     });
-
-    return this.repo.save(standingOrder);
+  
+    return this.repo.save(newOrder);
   }
+  
 
   async findByBalanceId(balanceId: number) {
     return this.repo.findOne({ where: { balanceId, status: 'active' } });
