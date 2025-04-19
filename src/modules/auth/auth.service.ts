@@ -28,13 +28,21 @@ export class AuthService {
   async validateUser(email: string, pass: string) {
     const user = await this.usersService.findByEmail(email);
     console.log('User found:', user);
-
-    if (user ) {
-      console.log('correct password:', user.password_hash);
-      const { password_hash, ...result } = user;
-      return result;
+    console.log('Password provided:', bcrypt.hashSync(pass, 10));
+  
+    if (user) {
+      const isMatch = await bcrypt.compare(pass, user.password_hash);
+      if (isMatch) {
+        console.log('Password is correct');
+        const { password_hash, ...result } = user;
+        return result;
+      } else {
+        console.log('Incorrect password');
+      }
+    } else {
+      console.log('User not found');
     }
-    console.log('incorrect password:', pass);
+  
     return null;
   }
 
@@ -56,7 +64,6 @@ export class AuthService {
   
 
   async registerParent(dto: RegisterParentDto) {
-    console.log('Registering parent:', dto);
     const family = await this.familyService.create({ name: dto.lastName });
   
     const hashedPassword = await bcrypt.hash(dto.password, 10);
