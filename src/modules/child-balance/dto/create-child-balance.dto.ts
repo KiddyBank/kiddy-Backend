@@ -1,1 +1,3 @@
-export class CreateChildBalanceDto {}
+export class CreateChildBalanceDto {
+    child_id: string;
+}

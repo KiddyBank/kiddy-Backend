@@ -40,8 +40,9 @@ export class ChildBalanceService {
     await this.transactionsRepository.save(newTransaction);
   }
 
-  create(createChildBalanceDto: CreateChildBalanceDto) {
-    return 'This action adds a new childBalance';
+  async create(createChildBalanceDto: CreateChildBalanceDto) {
+    const childBalance = await this.childBalanceRepository.create(createChildBalanceDto);
+    return await this.childBalanceRepository.save(childBalance);
   }
 
   findAll() {

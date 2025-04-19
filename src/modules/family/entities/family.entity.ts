@@ -12,7 +12,7 @@ export class Family {
 
   @OneToOne(() => Subscription, (subscription) => subscription.subscription_id)
   @JoinColumn({ name: 'subscription_plan_id' })
-  subscription: Family;
+  subscription: Subscription;
 
 @Column()
   subscription_plan_id: number;

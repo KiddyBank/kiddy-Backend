@@ -28,14 +28,11 @@ export class UsersService {
     });
   }
   
-  async createParent(dto: Partial<User>): Promise<User> {
-    const newUser = this.usersRepository.create({
-      ...dto,
-      user_role: UserRole.PARENT,
-    });
+  async createUser(user: Partial<User>): Promise<User> {
+    const newUser = this.usersRepository.create(user);
     return await this.usersRepository.save(newUser);
   }
-  
+
   async getChildBalanceFromUuid(userId: string):Promise<ChildBalance> {
     return await this.balanceRepository.findOne({
       where: { child_user: { user_id: userId } },

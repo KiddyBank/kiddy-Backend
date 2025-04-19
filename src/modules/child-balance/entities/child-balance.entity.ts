@@ -11,6 +11,9 @@ export class ChildBalance {
   @JoinColumn({ name: 'child_id' })
   child_user: User;
 
+  @Column({name: 'child_id' })
+  child_id: string;
+
   @Column({type: 'double precision', default: 0})
   balance_amount: number;
 
