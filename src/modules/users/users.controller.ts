@@ -18,7 +18,7 @@ export class UsersController {
   }
 
   @Post('parents/:parentId/accept-payment-request')
-  approveChildPaymentRequest(@Param('userId') parentId: string, @Body() paymentRequestDto: PaymentAcceptDto) {  
+  approveChildPaymentRequest(@Param('parentId') parentId: string, @Body() paymentRequestDto: PaymentAcceptDto) {  
     this.usersService.approveChildPaymentReuqest(parentId, paymentRequestDto.transactionId);
   }
 

@@ -130,7 +130,6 @@ export class UsersService {
     }
 
   async approveChildPaymentReuqest(parentId:string, childTransactionId: string) {
-
       const pendingTransaction = await this.transactionsRepository.findOne({
         where: { transaction_id: childTransactionId }
       });
