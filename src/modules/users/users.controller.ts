@@ -12,6 +12,11 @@ export class UsersController {
     return this.usersService.getChildrenPaymentReuqests(parentId);
   }
 
+  @Get('parents/:parentId/children')
+  getParentChildren(@Param('parentId') parentId: string) {  
+    return this.usersService.getParentChildren(parentId);
+  }
+
   @Post('parents/:parentId/accept-payment-request')
   approveChildPaymentRequest(@Param('userId') parentId: string, @Body() paymentRequestDto: PaymentAcceptDto) {  
     this.usersService.approveChildPaymentReuqest(parentId, paymentRequestDto.transactionId);

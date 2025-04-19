@@ -154,25 +154,61 @@ export class UsersService {
   }
 
   async getChildrenPaymentReuqests(parentId:string) {
-    const parentUser = await this.usersRepository.findOne({where: { user_id: parentId }});
-    const parentFamilyId: number = parentUser!.family.id;
-
-    const familyChildren = await this.usersRepository.find({
-      where: { family: { id: parentFamilyId } } });
-
-    const familyChildrenBalance = await this.balanceRepository.find({
-      where: {
-        child_user: {
-          user_id: 
-             In(familyChildren.map(child => child.user_id))
-        }
-      }
-    });
+    const { balances } = await this._getParentChildren(parentId);
 
     return await this.transactionsRepository.find({
-      where: { balance_id: In(familyChildrenBalance.map(child => child.balance_id)),
+      where: { balance_id: In(balances.map(child => child.balance_id)),
                status: TransactionStatus.PENDING_PARENT_APPROVAL }
        });
   
   }
-}
+
+  async getParentChildren(parentId: string) {
+    const { children, balances } = await this._getParentChildren(parentId);
+    const balanceMap = new Map(
+      balances.map(entry => [entry.child_user.user_id, entry.balance_amount]),
+    );
+  
+    return children.map(child => ({
+      name: child.username,
+      balance: balanceMap.get(child.user_id) ?? 0,
+      imageUrl: child.avatar_path ?? null,
+    }));
+  }
+
+  async _getParentChildren(parentId: string): Promise<{
+    children: User[];
+    balances: ChildBalance[];
+  }> {
+    const parent = await this.usersRepository.findOne({
+      where: { user_id: parentId },
+      relations: ['family'],
+    });
+  
+    if (!parent || !parent.family) {
+      throw new Error('Parent or family not found');
+    }
+  
+    const children = await this.usersRepository.find({
+      where: {
+        family: { id: parent.family.id },
+        user_role: UserRole.CHILD,
+      },
+    });
+  
+    const balances = await this.balanceRepository.find({
+      where: {
+        child_user: {
+          user_id: In(children.map(child => child.user_id)),
+        },
+      },
+      relations: ['child_user'],
+    });
+  
+    return {
+      children,
+      balances,
+    };
+  }
+  
+  }
