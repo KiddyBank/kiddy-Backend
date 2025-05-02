@@ -1,4 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+// standing-order.entity.ts
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  CreateDateColumn,
+} from 'typeorm';
+
+export type StandingOrderStatus = 'active' | 'paused' | 'complete';
 
 @Entity('standing_orders', { schema: 'finance' })
 export class StandingOrder {
@@ -20,12 +29,12 @@ export class StandingOrder {
   @Column({ name: 'finish_date', type: 'date', nullable: true })
   finishDate: Date | null;
 
-  @Column()
-  status: string;
+  @Column({ type: 'varchar' })
+  status: StandingOrderStatus;
 
-  @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;
 
-  @Column({ name: 'updated_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
 }

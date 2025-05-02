@@ -1,5 +1,5 @@
 export class CreateStandingOrderDto {
-    balanceId: number; // ✅ ולא childId
+    balanceId: number; 
     amount: number;
     daysFrequency: number;
     startDate: string;
