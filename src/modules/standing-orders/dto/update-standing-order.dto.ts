@@ -1,6 +1,8 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateStandingOrderDto } from './create-standing-order.dto';
+export class UpdateStandingOrderDto {
+  amount?: number;
+  daysFrequency?: number;
+  startDate?: string;
+  finishDate?: string;
+  status?: string;
+}
 
-export class UpdateStandingOrderDto extends PartialType(
-  CreateStandingOrderDto,
-) {}

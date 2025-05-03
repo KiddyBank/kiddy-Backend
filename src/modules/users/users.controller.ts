@@ -5,26 +5,21 @@ import { PerformPaymentDto } from './dto/perform-payment.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Get('parents/:parentId/children-payment-requests')
-  getChildrenPaymentRequests(@Param('parentId') parentId: string) {  
+  getChildrenPaymentRequests(@Param('parentId') parentId: string) {
     return this.usersService.getChildrenPaymentReuqests(parentId);
   }
 
   @Get('parents/:parentId/children')
-  getParentChildren(@Param('parentId') parentId: string) {  
+  getParentChildren(@Param('parentId') parentId: string) {
     return this.usersService.getParentChildren(parentId);
   }
 
-  @Post('parents/:parentId/accept-payment-request')
-  approveChildPaymentRequest(@Param('parentId') parentId: string, @Body() paymentRequestDto: PaymentAcceptDto) {  
-    this.usersService.approveChildPaymentReuqest(parentId, paymentRequestDto.transactionId);
-  }
-
-  @Get('balance/:childId')
-  getBalance(@Param('childId') childId: string) {
-    return this.usersService.getBalance(childId);
+  @Post('parents/:parentId/handle-payment-request')
+  handleChildPaymentRequest(@Param('parentId') parentId: string, @Body() body: { transactionId: string; action: 'approve' | 'reject' }) {
+    return this.usersService.handleChildPaymentRequest(parentId, body.transactionId, body.action);
   }
 
   @Get('balance/:childId')
@@ -33,9 +28,9 @@ export class UsersController {
   }
 
   @Get('transactions/:childId')
-  getFixedTransactions(@Param('childId') childId: string, @Query('transaction_type') transaction_type?:string, @Query('transaction_status') transaction_status?:string) {
-    return this.usersService.getTransactions(childId, transaction_type, transaction_status); ;
-  } 
+  getFixedTransactions(@Param('childId') childId: string, @Query('transaction_type') transaction_type?: string, @Query('transaction_status') transaction_status?: string) {
+    return this.usersService.getTransactions(childId, transaction_type, transaction_status);;
+  }
 
   @Get('tasks/:childId')
   getFixedTasks(@Param('childId') childId: string) {
@@ -49,4 +44,11 @@ export class UsersController {
   ) {
     return await this.usersService.deductBalance(childId, performPaymentDto.transactionId);
   }
+
+  @Get('parents/:parentId/children')
+  getChildrenOfParent(@Param('parentId') parentId: string) {
+    return this.usersService.getChildrenOfParent(parentId);
+  }
+
 }
+
