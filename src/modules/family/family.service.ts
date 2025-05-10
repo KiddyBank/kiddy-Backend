@@ -1,11 +1,26 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../users/user.entity';
 import { CreateFamilyDto } from './dto/create-family.dto';
 import { UpdateFamilyDto } from './dto/update-family.dto';
+import { Family } from './entities/family.entity';
 
 @Injectable()
 export class FamilyService {
-  create(createFamilyDto: CreateFamilyDto) {
-    return 'This action adds a new family';
+
+  constructor(
+    @InjectRepository(Family)
+    private familyRepository: Repository<Family>,
+
+    ) {}
+
+
+  async create(createFamilyDto: CreateFamilyDto) {
+    console.log('createFamilyDto', createFamilyDto);
+    const family = this.familyRepository.create(createFamilyDto);
+    return await this.familyRepository.save(family);
+
   }
 
   findAll() {

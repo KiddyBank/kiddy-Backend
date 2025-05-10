@@ -6,6 +6,9 @@ import { FamilyModule } from './modules/family/family.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { UsersModule } from './modules/users/users.module';
 import { TasksModule } from './modules/tasks/tasks.module';
+import { StandingOrdersModule } from './modules/standing-orders/standing-orders.module';
+
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -28,8 +31,10 @@ import { TasksModule } from './modules/tasks/tasks.module';
     ChildBalanceModule,
     FamilyModule,
     TransactionsModule,
-    TasksModule
-    
+    TasksModule,
+    StandingOrdersModule,
+    AuthModule
+
   ],
 })
-export class AppModule {}
+export class AppModule { }

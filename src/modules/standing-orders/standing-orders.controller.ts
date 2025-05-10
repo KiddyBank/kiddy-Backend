@@ -1,45 +1,24 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { StandingOrdersService } from './standing-orders.service';
 import { CreateStandingOrderDto } from './dto/create-standing-order.dto';
-import { UpdateStandingOrderDto } from './dto/update-standing-order.dto';
 
 @Controller('standing-orders')
 export class StandingOrdersController {
-  constructor(private readonly standingOrdersService: StandingOrdersService) {}
+  constructor(private readonly service: StandingOrdersService) {}
 
-  @Post()
-  create(@Body() createStandingOrderDto: CreateStandingOrderDto) {
-    return this.standingOrdersService.create(createStandingOrderDto);
+  @Post('set-allowance')
+  create(@Body() dto: CreateStandingOrderDto) {
+    return this.service.create(dto);
+}
+
+
+  @Get('child/:balanceId')
+  find(@Param('balanceId') balanceId: number) {
+    return this.service.findByBalanceId(balanceId);
   }
 
-  @Get()
-  findAll() {
-    return this.standingOrdersService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.standingOrdersService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateStandingOrderDto: UpdateStandingOrderDto,
-  ) {
-    return this.standingOrdersService.update(+id, updateStandingOrderDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.standingOrdersService.remove(+id);
+  @Post('remove/:balanceId')
+  remove(@Param('balanceId') balanceId: number) {
+    return this.service.removeByBalanceId(balanceId);
   }
 }

@@ -22,6 +22,18 @@ export enum Gender {
 
 @Entity({ schema: 'auth', name: 'users' })
 export class User {
+
+  constructor(username: string, email:string, password_hash:string,
+    dob: Date, gender: Gender, userRole: UserRole, familyId:number){
+    this.username = username;
+    this.email = email;
+    this.password_hash = password_hash;
+    this.user_role = userRole;
+    this.family_id = familyId;
+    this.dob = dob;
+    this.gender=gender;
+  }
+
   @PrimaryGeneratedColumn('uuid')
   user_id: string;
 
