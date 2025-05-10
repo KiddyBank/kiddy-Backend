@@ -32,7 +32,7 @@ import { AuthModule } from './modules/auth/auth.module';
     FamilyModule,
     TransactionsModule,
     TasksModule,
-    StandingOrdersModule, ,
+    StandingOrdersModule,
     AuthModule
 
   ],

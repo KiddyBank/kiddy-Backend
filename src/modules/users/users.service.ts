@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, In, Repository } from 'typeorm';
-import { User, UserRole } from './user.entity';
 import { ChildBalance } from '../child-balance/entities/child-balance.entity';
-import { Transaction, TransactionStatus, TransactionType } from '../transactions/entities/transaction.entity';
-import { Task } from '../tasks/entities/task.entity';
-import { User, UserRole } from './user.entity';
 import { StandingOrdersService } from '../standing-orders/standing-orders.service';
+import { Task } from '../tasks/entities/task.entity';
+import { Transaction, TransactionStatus, TransactionType } from '../transactions/entities/transaction.entity';
+import { User, UserRole } from './user.entity';
 
 @Injectable()
 export class UsersService {
@@ -134,29 +133,6 @@ export class UsersService {
     }
   }
 
-  async approveChildPaymentReuqest(parentId: string, childTransactionId: string) {
-    const pendingTransaction = await this.transactionsRepository.findOne({
-      where: { transaction_id: childTransactionId }
-    });
-
-    const child = await this.usersRepository.findOne({ where: { user_id: pendingTransaction!.child_balance.child_user.user_id } });
-    const parent = await this.usersRepository.findOne({ where: { user_id: parentId } });
-
-    const childFamilyId: number = child?.family.id!;
-    const parentFamilyId: number = parent?.family.id!;
-
-    if (childFamilyId !== parentFamilyId) {
-      console.error('❌ Mismatch between parent and child family id');
-      throw new Error('Mismatch between parent and child family id');
-    }
-
-    await this.transactionsRepository.update({
-      transaction_id: childTransactionId
-    }, {
-      status: TransactionStatus.APPORVED_BY_PARENT
-    });
-  }
-
   async handleChildPaymentRequest(
     parentId: string,
     childTransactionId: string,
@@ -171,18 +147,11 @@ export class UsersService {
       throw new Error('Transaction not found');
     }
 
-    const child = await this.usersRepository.findOne({
-      where: { user_id: pendingTransaction.child_balance.child_user.user_id },
-      relations: ['family']
-    });
+    const child = await this.usersRepository.findOne({ where: { user_id: pendingTransaction!.child_balance.child_user.user_id } });
+    const parent = await this.usersRepository.findOne({ where: { user_id: parentId } });
 
-    const parent = await this.usersRepository.findOne({
-      where: { user_id: parentId },
-      relations: ['family']
-    });
-
-    const childFamilyId = child?.family?.id;
-    const parentFamilyId = parent?.family?.id;
+    const childFamilyId: number = child?.family.id!;
+    const parentFamilyId: number = parent?.family.id!;
 
     if (childFamilyId !== parentFamilyId) {
       console.error('❌ Mismatch between parent and child family id');
@@ -214,76 +183,6 @@ export class UsersService {
 
   async getParentChildren(parentId: string) {
     const { children, balances } = await this._getParentChildren(parentId);
-    const balanceMap = new Map(
-      balances.map(entry => [entry.child_user.user_id, entry.balance_amount]),
-    );
-
-    return children.map(child => ({
-      name: child.username,
-      balance: balanceMap.get(child.user_id) ?? 0,
-      imageUrl: child.avatar_path ?? null,
-    }));
-  }
-
-  async _getParentChildren(parentId: string): Promise<{
-    children: User[];
-    balances: ChildBalance[];
-  }> {
-    const parent = await this.usersRepository.findOne({
-      where: { user_id: parentId },
-      relations: ['family'],
-    });
-
-    if (!parent || !parent.family) {
-      throw new Error('Parent or family not found');
-    }
-
-    const children = await this.usersRepository.find({
-      where: {
-        family: { id: parent.family.id },
-        user_role: UserRole.CHILD,
-      },
-    });
-
-    const balances = await this.balanceRepository.find({
-      where: {
-        child_user: {
-          user_id: In(children.map(child => child.user_id)),
-        },
-      },
-      relations: ['child_user'],
-    });
-
-    return {
-      children,
-      balances,
-    };
-  }
-
-
-
-  async getChildrenOfParent(parentId: string) {
-    const parent = await this.usersRepository.findOne({
-      where: { user_id: parentId, user_role: UserRole.PARENT },
-    });
-
-    if (!parent) {
-      throw new Error('Parent not found');
-    }
-
-    const children = await this.usersRepository.find({
-      where: {
-        family_id: parent.family_id,
-        user_role: UserRole.CHILD,
-      },
-    });
-
-    const balances = await this.balanceRepository.find({
-      where: {
-        child_user: In(children.map((child) => child.user_id)),
-      },
-      relations: ['child_user'],
-    });
 
     const balanceMap = new Map(
       balances.map((b) => [
@@ -334,6 +233,48 @@ export class UsersService {
       };
     });
   }
+
+
+
+
+
+  async _getParentChildren(parentId: string): Promise<{
+    children: User[];
+    balances: ChildBalance[];
+  }> {
+    const parent = await this.usersRepository.findOne({
+      where: { user_id: parentId, user_role: UserRole.PARENT },
+      relations: ['family'],
+    });
+
+    if (!parent || !parent.family) {
+      throw new Error('Parent or family not found');
+    }
+
+    const children = await this.usersRepository.find({
+      where: {
+        family: { id: parent.family.id },
+        user_role: UserRole.CHILD,
+      },
+    });
+
+    const balances = await this.balanceRepository.find({
+      where: {
+        child_user: {
+          user_id: In(children.map(child => child.user_id)),
+        },
+      },
+      relations: ['child_user'],
+    });
+
+    return {
+      children,
+      balances,
+    };
+  }
+
+
+
 
 
 }

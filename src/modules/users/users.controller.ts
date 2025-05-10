@@ -47,7 +47,7 @@ export class UsersController {
 
   @Get('parents/:parentId/children')
   getChildrenOfParent(@Param('parentId') parentId: string) {
-    return this.usersService.getChildrenOfParent(parentId);
+    return this.usersService.getParentChildren(parentId);
   }
 
 }
