@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, In, Repository } from 'typeorm';
 import { ChildBalance } from '../child-balance/entities/child-balance.entity';
 import { StandingOrdersService } from '../standing-orders/standing-orders.service';
-import { Task } from '../tasks/entities/task.entity';
+import { Task } from '../tasks/task.entity';
 import { Transaction, TransactionStatus, TransactionType } from '../transactions/entities/transaction.entity';
 import { User, UserRole } from './user.entity';
 

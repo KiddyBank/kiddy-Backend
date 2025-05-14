@@ -51,7 +51,7 @@ export class AuthService {
     console.log('User validated:', user);
     if (!user) throw new UnauthorizedException('Invalid credentials');
   
-    const payload = { sub: user.user_id, role: user.user_role };
+    const payload = { sub: user.user_id, role: user.user_role , family_id: user.family_id};
 
     console.log('Login payload:', payload);
     
