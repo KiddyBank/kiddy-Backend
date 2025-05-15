@@ -214,11 +214,11 @@ export class UsersService {
     return children.map((child) => {
       const balanceInfo = balanceMap.get(child.user_id);
       const standing = balanceInfo?.id ? standingMap.get(balanceInfo.id) : null;
-
+      
       return {
         id: child.user_id,
         name: child.username,
-        imageUrl: `http://${process.env.HOST || 'localhost'}:3000/static${child.avatar_path || '/avatars/avatar-boy.png'}`,
+        imageUrl: `${child.avatar_path || '/avatars/avatar-boy.png'}`,
         balance: balanceInfo?.amount || 0,
         balanceId: balanceInfo?.id || null,
         allowanceAmount: standing?.amount || null,

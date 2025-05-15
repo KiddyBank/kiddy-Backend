@@ -6,6 +6,7 @@ import { FamilyModule } from '../family/family.module';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { JwtStrategy } from './jwt.strategy'; 
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { AuthService } from './auth.service';
     FamilyModule,
     ChildBalanceModule
   ],
-  providers: [AuthService],
+  providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
   exports: [AuthService]
 })

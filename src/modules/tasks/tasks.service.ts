@@ -15,11 +15,10 @@ export class TasksService {
     private userRepo: Repository<User>,
   ) {}
 
-  async create(createTaskDto: CreateTaskDto, parentUser: User) {
+  async create(createTaskDto: CreateTaskDto, parentUser: {user_id: string , role: string , family_id: number}) {
     const { child_ids, ...taskFields } = createTaskDto;
-
     // אימות שהמשתמש הוא הורה
-    if (parentUser.user_role !== UserRole.PARENT) {
+    if (parentUser.role !== UserRole.PARENT) {
       throw new UnauthorizedException('Only parents can create tasks');
     }
 
