@@ -23,14 +23,16 @@ export class TasksController {
     return this.tasksService.create(createTaskDto, parentUser);
   }
 
-  @Get()
-  async findAll() {
-    return this.tasksService.findAll();
+  @UseGuards(AuthGuard('jwt'))
+  @Get('by-parent')
+  getTasksByParent(@Request() req) {
+    return this.tasksService.findByParent(req.user.sub);
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.tasksService.findOne(id);
+  @UseGuards(AuthGuard('jwt'))
+  @Get('by-child')
+  getTasksByChild(@Request() req) {
+    return this.tasksService.findByChild(req.user.sub);
   }
 
   @Delete(':id')

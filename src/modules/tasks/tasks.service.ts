@@ -44,14 +44,22 @@ export class TasksService {
     return this.taskRepo.save(task);
   }
 
-  async findAll() {
-    return this.taskRepo.find();
+  async findByParent(parentId: string): Promise<Task[]> {
+    return this.taskRepo.find({
+      where: {
+        author_parent: { user_id: parentId },
+      },
+      order: { created_at: 'DESC' },
+    });
   }
 
-  async findOne(id: string) {
-    const task = await this.taskRepo.findOneBy({ task_id: id });
-    if (!task) throw new NotFoundException('Task not found');
-    return task;
+
+  async findByChild(childId: string): Promise<Task[]> {
+    return this.taskRepo
+      .createQueryBuilder('task')
+      .where(':childId = ANY(task.child_ids)', { childId })
+      .orderBy('task.created_at', 'DESC')
+      .getMany();
   }
 
   async remove(id: string) {
