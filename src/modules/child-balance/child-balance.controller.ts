@@ -3,15 +3,20 @@ import { ChildBalanceService } from './child-balance.service';
 import { CreateChildBalanceDto } from './dto/create-child-balance.dto';
 import { UpdateChildBalanceDto } from './dto/update-child-balance.dto';
 import { PaymentRequestDto } from './dto/payment-request.dto';
+import { EducationService } from '../education/education.service';
 
 @Controller('child-balance')
 
 export class ChildBalanceController {
-  constructor(private readonly childBalanceService: ChildBalanceService) {}
+  constructor(private readonly childBalanceService: ChildBalanceService,
+    private readonly educationService: EducationService
+  ) { }
 
   @Post('place-payment-request/:childId')
-  placePaymentRequest(@Param('childId') childId: string, @Body() paymentRequestDto: PaymentRequestDto) {
-    return this.childBalanceService.placePaymentRequest(childId, paymentRequestDto);
+  async placePaymentRequest(@Param('childId') childId: string, @Body() paymentRequestDto: PaymentRequestDto) {
+    await this.childBalanceService.placePaymentRequest(childId, paymentRequestDto);
+    const actionType = 'PLACE_PAYMENT_REQUEST';
+    await this.educationService.handleFirstAction(childId, actionType);
   }
 
   @Post()

@@ -9,6 +9,9 @@ import { TasksModule } from './modules/tasks/tasks.module';
 import { StandingOrdersModule } from './modules/standing-orders/standing-orders.module';
 
 import { AuthModule } from './modules/auth/auth.module';
+import { EducationModule } from './modules/education/education.module';
+import { ChallengeInstanceModule } from './modules/challenge-instance/challenge-instance.module';
+import { ChallengesModule } from './modules/challenges/challenges.module';
 
 @Module({
   imports: [
@@ -33,7 +36,10 @@ import { AuthModule } from './modules/auth/auth.module';
     TransactionsModule,
     TasksModule,
     StandingOrdersModule,
-    AuthModule
+    AuthModule,
+    EducationModule,
+    ChallengeInstanceModule,
+    ChallengesModule
 
   ],
 })
