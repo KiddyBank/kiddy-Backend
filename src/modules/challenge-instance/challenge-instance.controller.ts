@@ -1,13 +1,18 @@
-import { Controller, Post } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { ChallengeInstanceService } from './challenge-instance.service';
 
 @Controller('challenge-instance')
 export class ChallengeInstanceController {
   constructor(private readonly challengeInstanceService: ChallengeInstanceService) { }
 
-  @Post('evaluate')
-  async evaluateAllChallenges(): Promise<void> {
-    return this.challengeInstanceService.evaluateActiveChallenges();
+  @Get('evaluate/:userId')
+  async EvaluateLevels(@Param('userId') userId: string) {
+    return this.challengeInstanceService.evaluateActiveChallenges(userId);
+  }
+
+  @Get('active/:userId')
+  async getActiveChallenges(@Param('userId') userId: string) {
+    return this.challengeInstanceService.getUserChallengesWithLevel(userId);
   }
 
 }

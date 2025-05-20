@@ -11,8 +11,5 @@ export class Level {
     @Column({ type: 'int' })
     xp_required: number;
 
-    @Column({ type: 'jsonb', default: {} })
-    reward: Record<string, any>;
-
     @CreateDateColumn() created_at: Date;
 }

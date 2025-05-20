@@ -8,8 +8,21 @@ import { Level } from "./entities/level.entity";
 export class LevelService {
   constructor(private readonly userRepo: Repository<User>,
     private readonly levelSubjectRepo: Repository<Level>,
-    private readonly userStats: Repository<UserStats>
+    private readonly userStats: Repository<UserStats>,
+    private readonly userStatsRepo: Repository<UserStats>
   ) { }
+
+  async getUserLevel(userId: string): Promise<number> {
+    const userStats = await this.userStatsRepo.findOne({
+      where: { user_id: userId },
+    });
+
+    if (!userStats) {
+      throw new Error(`User stats not found for user ID: ${userId}`);
+    }
+
+    return userStats.level_id;
+  }
 
   async evaluateLevel(userId: string): Promise<number> {
     const userStats = await this.userStats.findOneBy({ user_id: userId });

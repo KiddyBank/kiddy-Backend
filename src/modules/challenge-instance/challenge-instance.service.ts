@@ -57,10 +57,9 @@ export class ChallengeInstanceService {
     });
   }
 
-
-  async evaluateActiveChallenges(): Promise<void> {
+  async evaluateActiveChallenges(userId: string): Promise<void> {
     const activeChallenges = await this.challengeInstanceRepo.find({
-      where: { status: ChallengeEvaluationStatus.IN_PROGRESS },
+      where: { status: ChallengeEvaluationStatus.IN_PROGRESS, user_id: userId },
       relations: ['user'],
     });
 
@@ -122,6 +121,19 @@ export class ChallengeInstanceService {
     const difficulties = Object.values(ChallengeDifficulty) as ChallengeDifficulty[];
     const index = Math.floor(Math.random() * difficulties.length);
     return difficulties[index];
+  }
+
+
+  async getUserChallengesWithLevel(userId: string): Promise<{ challenges: ChallengeInstance[], level: number, category: string }> {
+    const challenges = await this.challengeInstanceRepo.find({
+      where: { user_id: userId, status: ChallengeEvaluationStatus.IN_PROGRESS },
+      relations: ['challenge'],
+    });
+
+    const userLevel = await this.levelService.getUserLevel(userId);
+    const category = await this.levelService.getLevelCategory(userLevel);
+
+    return { challenges, level: userLevel, category };
   }
 
 }
