@@ -176,10 +176,11 @@ export class UsersService {
       where: {
         balance_id: In(balances.map(child => child.balance_id)),
         status: TransactionStatus.PENDING_PARENT_APPROVAL
-      }
+      },
+      relations: ['child_balance', 'child_balance.child_user'] 
     });
-
   }
+
 
   async getParentChildren(parentId: string) {
     const { children, balances } = await this._getParentChildren(parentId);

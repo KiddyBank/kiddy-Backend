@@ -35,11 +35,18 @@ export class TasksService {
       throw new BadRequestException('One or more children are invalid or not in your family');
     }
 
+    const fullParent = await this.userRepo.findOneOrFail({
+      where: { user_id: parentUser.user_id },
+    });
+
     const task = this.taskRepo.create({
       ...taskFields,
       child_ids,
-      author_parent: parentUser,
-    });
+    author_parent: fullParent,
+      });
+
+      console.log('🎯 נשמר לפי JWT:', fullParent.user_id);
+
 
     return this.taskRepo.save(task);
   }
