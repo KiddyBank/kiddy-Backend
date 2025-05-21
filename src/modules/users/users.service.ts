@@ -195,7 +195,6 @@ export class UsersService {
       ])
     );
 
-    // 🧠 שימוש ב־StandingOrdersService עבור כל balanceId
     const standingOrders = await Promise.all(
       balances.map((b) => this.standingOrdersService.findByBalanceId(b.balance_id))
     );
@@ -219,7 +218,8 @@ export class UsersService {
       return {
         id: child.user_id,
         name: child.username,
-        imageUrl: `${child.avatar_path || '/avatars/avatar-boy.png'}`,
+        gender: child.gender,
+        imageUrl: child.avatar_path || '/avatars/avatar-boy.png',
         balance: balanceInfo?.amount || 0,
         balanceId: balanceInfo?.id || null,
         allowanceAmount: standing?.amount || null,
@@ -227,17 +227,13 @@ export class UsersService {
           standing?.interval === 30
             ? 'monthly'
             : standing?.interval === 7
-              ? 'weekly'
-              : standing?.interval
-                ? 'test'
-                : undefined,
+            ? 'weekly'
+            : standing?.interval === 0
+            ? 'test'
+            : undefined,
       };
     });
   }
-
-
-
-
 
   async _getParentChildren(parentId: string): Promise<{
     children: User[];

@@ -5,6 +5,7 @@ import { Task } from './task.entity';
 import { User, UserRole } from 'src/modules/users/user.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 
+
 @Injectable()
 export class TasksService {
   constructor(
@@ -12,8 +13,9 @@ export class TasksService {
     private taskRepo: Repository<Task>,
 
     @InjectRepository(User)
-    private userRepo: Repository<User>,
+    private userRepo: Repository<User>
   ) {}
+
 
   async create(createTaskDto: CreateTaskDto, parentUser: {user_id: string , role: string , family_id: number}) {
     const { child_ids, ...taskFields } = createTaskDto;
@@ -44,21 +46,30 @@ export class TasksService {
       child_ids,
     author_parent: fullParent,
       });
-
       console.log('🎯 נשמר לפי JWT:', fullParent.user_id);
-
-
     return this.taskRepo.save(task);
   }
 
   async findByParent(parentId: string): Promise<Task[]> {
-    return this.taskRepo.find({
-      where: {
-        author_parent: { user_id: parentId },
-      },
-      order: { created_at: 'DESC' },
-    });
-  }
+  const tasks = await this.taskRepo.find({
+    where: { author_parent: { user_id: parentId } },
+    order: { created_at: 'DESC' },
+  });
+
+  const allChildIds = [...new Set(tasks.flatMap(t => t.child_ids))];
+  const children = await this.userRepo.find({
+    where: { user_id: In(allChildIds) },
+    select: ['user_id', 'username'],
+  });
+
+
+  const childMap = new Map(children.map(c => [c.user_id, c.username]));
+
+  return tasks.map(task => ({
+    ...task,
+    child_names: task.child_ids.map(id => childMap.get(id) || '---')
+  }));
+}
 
 
   async findByChild(childId: string): Promise<Task[]> {
