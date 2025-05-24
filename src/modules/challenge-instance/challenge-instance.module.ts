@@ -1,9 +1,20 @@
 import { Module } from '@nestjs/common';
-import { ChallengeInstanceService } from './challenge-instance.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Challenge } from '../challenges/entities/challenge.entity';
+import { Transaction } from '../transactions/entities/transaction.entity';
+import { UserStats } from '../users-stats/entities/users-stat.entity';
+
+import { Level } from '../levels/entities/level.entity';
+import { LevelsModule } from '../levels/levels.module';
+import { UsersModule } from '../users/users.module';
 import { ChallengeInstanceController } from './challenge-instance.controller';
+import { ChallengeEvaluatorFactory, ChallengeInstanceService } from './challenge-instance.service';
+import { ChallengeInstance } from './entities/challenge-instance.entity';
 
 @Module({
+  imports: [TypeOrmModule.forFeature([ChallengeInstance, Challenge, UserStats, Transaction, Level]), LevelsModule, UsersModule],
   controllers: [ChallengeInstanceController],
-  providers: [ChallengeInstanceService],
+  providers: [ChallengeInstanceService, ChallengeEvaluatorFactory],
+  exports: [ChallengeInstanceService, ChallengeEvaluatorFactory]
 })
-export class ChallengeInstanceModule {}
+export class ChallengeInstanceModule { }

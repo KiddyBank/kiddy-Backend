@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { ChallengeInstanceModule } from '../challenge-instance/challenge-instance.module';
 import { ChildBalanceModule } from '../child-balance/child-balance.module';
 import { FamilyModule } from '../family/family.module';
+import { UsersStatsModule } from '../users-stats/users-stats.module';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -16,12 +18,14 @@ import { AuthService } from './auth.service';
     }),
     UsersModule,
     FamilyModule,
-    ChildBalanceModule
+    ChildBalanceModule,
+    ChallengeInstanceModule,
+    UsersStatsModule
   ],
   providers: [AuthService],
   controllers: [AuthController],
   exports: [AuthService]
 })
-export class AuthModule {}
+export class AuthModule { }
 
 

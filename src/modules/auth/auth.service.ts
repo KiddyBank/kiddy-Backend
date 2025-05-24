@@ -8,6 +8,7 @@ import { RegisterParentDto } from './dto/register-parent.dto';
 
 import { randomBytes } from 'crypto';
 import { ChildBalanceService } from 'src/modules/child-balance/child-balance.service';
+import { ChallengeInstanceService } from '../challenge-instance/challenge-instance.service';
 import { UsersStatsService } from '../users-stats/users-stats.service';
 
 function generateRandomPassword(length = 10): string {
@@ -24,7 +25,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly familyService: FamilyService,
     private readonly childBalanceService: ChildBalanceService,
-    private readonly userStatService: UsersStatsService
+    private readonly userStatService: UsersStatsService,
+    private readonly challengeInstanceService: ChallengeInstanceService
   ) { }
 
   async validateUser(email: string, pass: string) {
@@ -101,6 +103,8 @@ export class AuthService {
         const createdChild = await this.usersService.createUser(childData);
 
         await this.userStatService.createForUser(createdChild.user_id);
+        await this.challengeInstanceService.generateInitialChallenges(createdChild.user_id);
+
         await this.childBalanceService.create({ child_id: createdChild.user_id });
       }
     }

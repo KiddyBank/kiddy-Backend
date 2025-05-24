@@ -9,10 +9,10 @@ import { StandingOrdersCron } from './standing-orders.cron';
 @Module({
   imports: [
     TypeOrmModule.forFeature([StandingOrder]),
-    ScheduleModule.forRoot(), 
+    ScheduleModule.forRoot(),
   ],
   controllers: [StandingOrdersController],
   providers: [StandingOrdersService, StandingOrdersCron],
   exports: [StandingOrdersService],
 })
-export class StandingOrdersModule {}
+export class StandingOrdersModule { }

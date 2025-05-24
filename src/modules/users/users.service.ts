@@ -160,7 +160,7 @@ export class UsersService {
 
     const status =
       action === 'approve'
-        ? TransactionStatus.APPORVED_BY_PARENT
+        ? TransactionStatus.APPROVED_BY_PARENT
         : TransactionStatus.REJECTED;
 
     return this.transactionsRepository.update(

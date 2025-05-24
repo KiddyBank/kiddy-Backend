@@ -1,3 +1,4 @@
+import { InjectRepository } from "@nestjs/typeorm";
 import { ChallengeDifficulty, ChallengeInterval } from "src/modules/challenge-instance/entities/challenge-instance.entity";
 import { Transaction, TransactionStatus, TransactionType } from "src/modules/transactions/entities/transaction.entity";
 import { UsersService } from "src/modules/users/users.service";
@@ -8,6 +9,7 @@ import { ChallengeEvaluationStatus } from "./challenge-evaluator-strategy";
 
 export class RequestPaymentCountEvaluator extends AbstractChallengeEvaluator<{ requiredCount: number }> {
   constructor(
+    @InjectRepository(Transaction)
     private readonly transactionsRepo: Repository<Transaction>,
     private readonly userService: UsersService
   ) {

@@ -1,14 +1,15 @@
 import { Injectable } from "@nestjs/common";
 import { Repository } from "typeorm";
 import { UserStats } from "../users-stats/entities/users-stat.entity";
-import { User } from "../users/user.entity";
 import { Level } from "./entities/level.entity";
+import { InjectRepository } from "@nestjs/typeorm";
 
 @Injectable()
 export class LevelService {
-  constructor(private readonly userRepo: Repository<User>,
+  constructor(
+    @InjectRepository(Level)
     private readonly levelSubjectRepo: Repository<Level>,
-    private readonly userStats: Repository<UserStats>,
+    @InjectRepository(UserStats)
     private readonly userStatsRepo: Repository<UserStats>
   ) { }
 
@@ -25,7 +26,7 @@ export class LevelService {
   }
 
   async evaluateLevel(userId: string): Promise<number> {
-    const userStats = await this.userStats.findOneBy({ user_id: userId });
+    const userStats = await this.userStatsRepo.findOneBy({ user_id: userId });
     if (userStats?.current_level_xp == userStats?.total_xp) {
       return (userStats?.level_id! + 1);
     }

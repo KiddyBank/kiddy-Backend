@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { UserStats } from './entities/users-stat.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UsersStatsService {
   constructor(
+    @InjectRepository(UserStats)
     private readonly userStatRepository: Repository<UserStats>,
   ) { }
 
@@ -17,5 +19,6 @@ export class UsersStatsService {
       updated_at: new Date()
     });
   }
+
 
 }

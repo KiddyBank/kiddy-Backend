@@ -12,6 +12,9 @@ import { AuthModule } from './modules/auth/auth.module';
 import { EducationModule } from './modules/education/education.module';
 import { ChallengeInstanceModule } from './modules/challenge-instance/challenge-instance.module';
 import { ChallengesModule } from './modules/challenges/challenges.module';
+import { UsersStatsModule } from './modules/users-stats/users-stats.module';
+import { Level } from './modules/levels/entities/level.entity';
+import { LevelsModule } from './modules/levels/levels.module';
 
 @Module({
   imports: [
@@ -39,8 +42,9 @@ import { ChallengesModule } from './modules/challenges/challenges.module';
     AuthModule,
     EducationModule,
     ChallengeInstanceModule,
-    ChallengesModule
-
+    ChallengesModule,
+    UsersStatsModule,
+    LevelsModule
   ],
 })
 export class AppModule { }

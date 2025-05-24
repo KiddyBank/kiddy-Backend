@@ -8,21 +8,23 @@ import { ChildBalance } from '../child-balance/entities/child-balance.entity';
 @Injectable()
 export class StandingOrdersService {
   constructor(
+
     @InjectRepository(StandingOrder)
     private readonly repo: Repository<StandingOrder>,
+
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   async create(dto: CreateStandingOrderDto) {
     const existing = await this.findByBalanceId(dto.balanceId);
-  
+
     if (existing) {
-    // לסגור את הרשומה הקודמת
-      existing.status = 'complete'; 
+      // לסגור את הרשומה הקודמת
+      existing.status = 'complete';
       existing.finishDate = new Date();
       await this.repo.save(existing);
     }
-  
+
     // יצירת רשומה חדשה
     const newOrder = this.repo.create({
       balanceId: dto.balanceId,
@@ -31,10 +33,10 @@ export class StandingOrdersService {
       startDate: new Date(dto.startDate),
       status: 'active',
     });
-  
+
     return this.repo.save(newOrder);
   }
-  
+
 
   async findByBalanceId(balanceId: number) {
     return this.repo.findOne({ where: { balanceId, status: 'active' } });
@@ -52,28 +54,28 @@ export class StandingOrdersService {
   async runScheduledAllowances() {
     const orders = await this.repo.find({ where: { status: 'active' } });
     const now = new Date();
-  
+
     for (const order of orders) {
       if (!this.shouldRun(order, now)) continue;
-  
+
       const queryRunner = this.dataSource.createQueryRunner();
       await queryRunner.connect();
       await queryRunner.startTransaction();
-  
+
       try {
         const balance = await queryRunner.manager.findOneBy(ChildBalance, {
           balance_id: order.balanceId,
           is_active: true,
         });
-  
+
         if (!balance) continue;
-  
+
         balance.balance_amount += order.amount;
         await queryRunner.manager.save(balance);
-  
+
         order.startDate = now;
         await queryRunner.manager.save(order);
-  
+
         await queryRunner.commitTransaction();
       } catch (err) {
         await queryRunner.rollbackTransaction();
@@ -83,7 +85,7 @@ export class StandingOrdersService {
       }
     }
   }
-  
+
   private shouldRun(order: StandingOrder, now: Date): boolean {
     const lastRun = new Date(order.startDate);
     const daysSinceLastRun = Math.floor((now.getTime() - lastRun.getTime()) / (1000 * 60 * 60 * 24));

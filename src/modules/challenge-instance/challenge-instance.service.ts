@@ -8,17 +8,19 @@ import { LevelService } from "../levels/levels.service";
 import { Transaction } from "../transactions/entities/transaction.entity";
 import { UserStats } from "../users-stats/entities/users-stat.entity";
 import { UsersService } from "../users/users.service";
-import { ChallengeDifficulty, ChallengeInstance } from "./entities/challenge-instance.entity";
-
-
+import { ChallengeDifficulty, ChallengeInstance, ChallengeInterval } from "./entities/challenge-instance.entity";
+import { InjectRepository } from "@nestjs/typeorm";
 
 @Injectable()
 export class ChallengeEvaluatorFactory {
+  private evaluators: Partial<Record<string, ChallengeEvalStrategy>>;
+
 
   constructor(
+    @InjectRepository(Transaction)
     private readonly transactionsRepo: Repository<Transaction>,
+
     private readonly userService: UsersService,
-    private evaluators: Partial<Record<string, ChallengeEvalStrategy>>
 
   ) {
     const requestPaymentCountEvaluator = new RequestPaymentCountEvaluator(transactionsRepo, userService);
@@ -43,10 +45,13 @@ export class ChallengeEvaluatorFactory {
 @Injectable()
 export class ChallengeInstanceService {
   constructor(
+    @InjectRepository(ChallengeInstance)
     private readonly challengeInstanceRepo: Repository<ChallengeInstance>,
+    @InjectRepository(UserStats)
     private readonly userStatsRepo: Repository<UserStats>,
     private readonly challengeFactory: ChallengeEvaluatorFactory,
     private readonly levelService: LevelService,
+    @InjectRepository(Challenge)
     private readonly challengeRepo: Repository<Challenge>,
 
   ) { }
@@ -134,6 +139,34 @@ export class ChallengeInstanceService {
     const category = await this.levelService.getLevelCategory(userLevel);
 
     return { challenges, level: userLevel, category };
+  }
+
+  async generateInitialChallenges(userId: string): Promise<void> {
+    const category = await this.levelService.getLevelCategory(1);
+    const challenges: Challenge[] = await this.getChallengesByCategory(category);
+    const now = new Date();
+
+    const instances: ChallengeInstance[] = [];
+
+    for (const interval of Object.values(ChallengeInterval)) {
+      for (let i = 0; i < 2; i++) {
+        const randomIndex = Math.floor(Math.random() * challenges.length);
+        const selectedChallenge = challenges[randomIndex];
+
+        const instance = new ChallengeInstance();
+        instance.user_id = userId;
+        instance.challenge_id = selectedChallenge.id;
+        instance.status = ChallengeEvaluationStatus.IN_PROGRESS;
+        instance.difficulty = this.getRandomDifficulty();
+        instance.interval = interval;
+        instance.start_date = now;
+        instance.progress = 0;
+
+        instances.push(instance);
+      }
+    }
+
+    await this.challengeInstanceRepo.save(instances);
   }
 
 }
