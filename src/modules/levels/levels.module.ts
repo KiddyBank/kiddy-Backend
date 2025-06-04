@@ -6,7 +6,7 @@ import { LevelsController } from './levels.controller';
 import { LevelService } from './levels.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Level, UserStats])],
+  imports: [TypeOrmModule.forFeature([Level])],
   controllers: [LevelsController],
   providers: [LevelService],
   exports: [LevelService],

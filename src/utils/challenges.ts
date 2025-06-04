@@ -13,3 +13,11 @@ export function getChallengeEndDate(startDate: Date, interval: ChallengeInterval
             return addDays(startDate, 7);
     }
 }
+
+export function fillPlaceholders(template: string, params: Record<string, any>): string {
+    return template.replace(/{(\w+)}/g, (_, key) => {
+        const value = params[key];
+        return value !== undefined ? String(value) : `{${key}}`;
+    });
+}
+

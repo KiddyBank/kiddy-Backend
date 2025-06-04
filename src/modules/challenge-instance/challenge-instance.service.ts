@@ -1,15 +1,17 @@
 import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Challenge } from "../challenges/entities/challenge.entity";
 import { ChallengeEvalStrategy, ChallengeEvaluationStatus } from "../challenges/evaluators/challenge-evaluator-strategy";
 import { RequestPaymentCountEvaluator } from "../challenges/evaluators/request-payment-count-evaluator";
 import { SpendLessThanEvaluator } from "../challenges/evaluators/spend-less-than-evaluator";
-import { LevelService } from "../levels/levels.service";
 import { Transaction } from "../transactions/entities/transaction.entity";
 import { UserStats } from "../users-stats/entities/users-stat.entity";
+import { UsersStatsService } from "../users-stats/users-stats.service";
 import { UsersService } from "../users/users.service";
+import { ActiveChallengesResponseDTO } from "./dto/active-challenges.dto";
+import { ChallengeInstanceDTO } from "./dto/challenge-instance.dto";
 import { ChallengeDifficulty, ChallengeInstance, ChallengeInterval } from "./entities/challenge-instance.entity";
-import { InjectRepository } from "@nestjs/typeorm";
 
 @Injectable()
 export class ChallengeEvaluatorFactory {
@@ -50,7 +52,7 @@ export class ChallengeInstanceService {
     @InjectRepository(UserStats)
     private readonly userStatsRepo: Repository<UserStats>,
     private readonly challengeFactory: ChallengeEvaluatorFactory,
-    private readonly levelService: LevelService,
+    private readonly userStatsService: UsersStatsService,
     @InjectRepository(Challenge)
     private readonly challengeRepo: Repository<Challenge>,
 
@@ -63,9 +65,10 @@ export class ChallengeInstanceService {
   }
 
   async evaluateActiveChallenges(userId: string): Promise<void> {
+    console.log(`Evaluating challenges for user: ${userId}`);
     const activeChallenges = await this.challengeInstanceRepo.find({
       where: { status: ChallengeEvaluationStatus.IN_PROGRESS, user_id: userId },
-      relations: ['user'],
+      relations: ['challenge'],
     });
 
     for (const instance of activeChallenges) {
@@ -89,14 +92,10 @@ export class ChallengeInstanceService {
           await this.userStatsRepo.increment({ user_id: instance.user_id }, 'current_level_xp', earnedXp);
           await this.userStatsRepo.increment({ user_id: instance.user_id }, 'total_xp', earnedXp);
 
-          const newLevel = await this.levelService.evaluateLevel(instance.user_id);
-          await this.userStatsRepo.update(
-            { user_id: instance.user_id },
-            { level_id: newLevel }
-          );
-          const levelCategory = await this.levelService.getLevelCategory(newLevel);
+          const newLevel = await this.userStatsService.evaluateLevel(instance.user_id);
 
-          await this.challengeInstanceRepo.delete({ user_id: instance.user_id });
+          const levelCategory = await this.userStatsService.getLevelCategory(newLevel);
+          await this.challengeInstanceRepo.delete({ id: instance.id });
           const generated: ChallengeInstance = await this.generateNewChallenge(instance, levelCategory);
           await this.challengeInstanceRepo.save(generated);
         }
@@ -105,11 +104,14 @@ export class ChallengeInstanceService {
   }
 
   private async generateNewChallenge(oldChallenge: ChallengeInstance, category: string): Promise<ChallengeInstance> {
+    console.log(`Generating new challenge for user ${oldChallenge.user_id} in category ${category}`);
     const challenges: Challenge[] = await this.getChallengesByCategory(category);
-    const now = new Date();
+
+    console.log(challenges)
 
     const randomIndex = Math.floor(Math.random() * challenges.length);
     const selectedChallenge = challenges[randomIndex];
+
 
     const instance = new ChallengeInstance();
     instance.user_id = oldChallenge.user_id;
@@ -117,8 +119,6 @@ export class ChallengeInstanceService {
     instance.status = ChallengeEvaluationStatus.IN_PROGRESS;
     instance.difficulty = this.getRandomDifficulty();
     instance.interval = oldChallenge.interval;
-    instance.start_date = now;
-    instance.progress = 0;
     return instance;
   }
 
@@ -129,20 +129,36 @@ export class ChallengeInstanceService {
   }
 
 
-  async getUserChallengesWithLevel(userId: string): Promise<{ challenges: ChallengeInstance[], level: number, category: string }> {
+  async getUserChallengesWithLevel(userId: string): Promise<ActiveChallengesResponseDTO> {
     const challenges = await this.challengeInstanceRepo.find({
       where: { user_id: userId, status: ChallengeEvaluationStatus.IN_PROGRESS },
       relations: ['challenge'],
     });
 
-    const userLevel = await this.levelService.getUserLevel(userId);
-    const category = await this.levelService.getLevelCategory(userLevel);
+    console.log(userId)
+    const userLevel = await this.userStatsService.getUserLevel(userId);
+    const category = await this.userStatsService.getLevelCategory(userLevel);
 
-    return { challenges, level: userLevel, category };
+
+    const mapped_challenges: ChallengeInstanceDTO[] = challenges.map(ci => ({
+      id: ci.id,
+      challenge_id: ci.challenge_id,
+      name: this.challengeFactory.getEvaluator(ci.challenge.type).getParamTemplatedMessage(ci.challenge.name, ci.difficulty, ci.interval),
+      difficulty: ci.difficulty as ChallengeDifficulty,
+      interval: ci.interval as ChallengeInterval,
+      progress: ci.progress,
+      status: ci.status as ChallengeEvaluationStatus,
+    }));
+
+    return {
+      challenges: mapped_challenges,
+      level: userLevel,
+      category,
+    };
   }
 
   async generateInitialChallenges(userId: string): Promise<void> {
-    const category = await this.levelService.getLevelCategory(1);
+    const category = await this.userStatsService.getLevelCategory(1);
     const challenges: Challenge[] = await this.getChallengesByCategory(category);
     const now = new Date();
 

@@ -1,18 +1,18 @@
 import { Challenge } from "src/modules/challenges/entities/challenge.entity";
 import { ChallengeEvaluationStatus } from "src/modules/challenges/evaluators/challenge-evaluator-strategy";
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
 
 
 export enum ChallengeInterval {
-    DAILY = 'daily',
-    WEEKLY = 'weekly',
+    DAILY = 'DAILY',
+    WEEKLY = 'WEEKLY',
     MONTHLY = 'monthly'
 }
 
 export enum ChallengeDifficulty {
-    EASY = 1,
-    MEDIUM = 2,
-    HARD = 3
+    EASY = 'EASY',
+    MEDIUM = 'MEDIUM',
+    HARD = 'HARD'
 }
 
 
@@ -38,8 +38,8 @@ export class ChallengeInstance {
     })
     status: ChallengeEvaluationStatus;
 
-    @Column()
-    progress: Number;
+    @Column('decimal', { precision: 6, scale: 2 })
+    progress: number;
 
 
     @Column()

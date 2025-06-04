@@ -20,8 +20,8 @@ export class RequestPaymentCountEvaluator extends AbstractChallengeEvaluator<{ r
         [ChallengeDifficulty.HARD]: 3,
       }, {
       [ChallengeInterval.DAILY]: 1,
-      [ChallengeInterval.WEEKLY]: 1.5,
-      [ChallengeInterval.MONTHLY]: 2,
+      [ChallengeInterval.WEEKLY]: 2,
+      [ChallengeInterval.MONTHLY]: 4,
     });
   }
 
@@ -48,11 +48,12 @@ export class RequestPaymentCountEvaluator extends AbstractChallengeEvaluator<{ r
     });
 
     const progress = Math.min(count / scaledParams.requiredCount, 1);
+    console.log(`User ${userId} progress: ${progress} (count: ${count}, required: ${scaledParams.requiredCount})`);
     const now = new Date();
     const endDate = getChallengeEndDate(startDate, interval);
 
     if (progress >= 1) {
-      return [ChallengeEvaluationStatus.COMPLETED, progress, this.baseXp * difficulty.valueOf()];
+      return [ChallengeEvaluationStatus.COMPLETED, progress, this.baseXp];
     }
 
     if (now >= endDate) {

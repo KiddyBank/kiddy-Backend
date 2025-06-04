@@ -58,12 +58,12 @@ export class SpendLessThanEvaluator extends AbstractChallengeEvaluator<{ maxAmou
         const endDate = getChallengeEndDate(startDate, interval);
         const now = new Date();
 
-        if (progress >= 1) {
+        if (progress <= 0) {
             return [ChallengeEvaluationStatus.FAILED, progress, 0];
         }
 
         if (now > endDate) {
-            return [ChallengeEvaluationStatus.COMPLETED, progress, this.baseXp * difficulty.valueOf()];
+            return [ChallengeEvaluationStatus.COMPLETED, progress, this.baseXp];
         }
 
         return [ChallengeEvaluationStatus.IN_PROGRESS, progress, 0];

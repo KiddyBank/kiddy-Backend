@@ -4,12 +4,18 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeor
 export class Level {
     @PrimaryGeneratedColumn() id: number;
 
-    @Column() name: string;
+    @Column()
+    name: string;
 
-    @Column() category: string;
+    @Column()
+    category: string;
 
     @Column({ type: 'int' })
     xp_required: number;
 
-    @CreateDateColumn() created_at: Date;
+    @CreateDateColumn()
+    created_at: Date;
+
+    @Column()
+    icon: string;
 }
