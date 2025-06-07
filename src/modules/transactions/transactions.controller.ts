@@ -16,21 +16,27 @@ export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
   @Post()
-  create(@Body() createTransactionDto: CreateTransactionDto) {
-    return this.transactionsService.create(createTransactionDto);
-  }
+    create(@Body() createTransactionDto: CreateTransactionDto) {
+      return this.transactionsService.create(createTransactionDto);
+    }
 
 
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateTransactionDto: UpdateTransactionDto,
-  ) {
-    return this.transactionsService.update(+id, updateTransactionDto);
-  }
+    update(
+      @Param('id') id: string,
+      @Body() updateTransactionDto: UpdateTransactionDto,
+    ) {
+      return this.transactionsService.update(+id, updateTransactionDto);
+    }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.transactionsService.remove(+id);
-  }
+    remove(@Param('id') id: string) {
+      return this.transactionsService.remove(+id);
+    }
+
+  @Post('request-task-payment')
+    async requestTaskPayment(@Body() body: { taskId: string; childId: string }) {
+      return this.transactionsService.createTaskPaymentRequest(body.taskId, body.childId);
+    }
+  
 }

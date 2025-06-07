@@ -38,8 +38,13 @@ export class TasksService {
     }
 
     const fullParent = await this.userRepo.findOneOrFail({
-      where: { user_id: parentUser.user_id },
+      where: {
+        user_id: parentUser.user_id,
+        family_id: parentUser.family_id,
+        user_role: UserRole.PARENT,
+      },
     });
+
 
     const task = this.taskRepo.create({
       ...taskFields,

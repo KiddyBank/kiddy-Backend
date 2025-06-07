@@ -133,41 +133,57 @@ export class UsersService {
     }
   }
 
+
   async handleChildPaymentRequest(
-    parentId: string,
-    childTransactionId: string,
-    action: 'approve' | 'reject'
-  ) {
-    const pendingTransaction = await this.transactionsRepository.findOne({
-      where: { transaction_id: childTransactionId },
-      relations: ['child_balance', 'child_balance.child_user', 'child_balance.child_user.family']
-    });
+  parentId: string,
+  childTransactionId: string,
+  action: 'approve' | 'reject'
+) {
+  const pendingTransaction = await this.transactionsRepository.findOne({
+    where: { transaction_id: childTransactionId },
+    relations: ['child_balance', 'child_balance.child_user', 'child_balance.child_user.family']
+  });
 
-    if (!pendingTransaction) {
-      throw new Error('Transaction not found');
-    }
-
-    const child = await this.usersRepository.findOne({ where: { user_id: pendingTransaction!.child_balance.child_user.user_id } });
-    const parent = await this.usersRepository.findOne({ where: { user_id: parentId } });
-
-    const childFamilyId: number = child?.family.id!;
-    const parentFamilyId: number = parent?.family.id!;
-
-    if (childFamilyId !== parentFamilyId) {
-      console.error('❌ Mismatch between parent and child family id');
-      throw new Error('Mismatch between parent and child family id');
-    }
-
-    const status =
-      action === 'approve'
-        ? TransactionStatus.APPORVED_BY_PARENT
-        : TransactionStatus.REJECTED;
-
-    return this.transactionsRepository.update(
-      { transaction_id: childTransactionId },
-      { status }
-    );
+  if (!pendingTransaction) {
+    throw new Error('Transaction not found');
   }
+
+  const child = await this.usersRepository.findOne({ where: { user_id: pendingTransaction.child_balance.child_user.user_id } });
+  const parent = await this.usersRepository.findOne({ where: { user_id: parentId } });
+
+
+  if (!parent || !parent.family || !child || child.family.id !== parent.family.id ) {
+    throw new Error('Mismatch or missing data: either parent or child or their family info is missing or does not match');
+  }
+
+  const status =
+    action === 'approve'
+      ? TransactionStatus.APPORVED_BY_PARENT
+      : TransactionStatus.REJECTED;
+
+  if (action === 'approve') {
+    switch (pendingTransaction.type) {
+      case TransactionType.PARENT_DEPOSIT: // בקשת הפקדה
+        pendingTransaction.child_balance.balance_amount += pendingTransaction.amount;
+        await this.balanceRepository.save(pendingTransaction.child_balance);
+        break;
+      case TransactionType.STORE_PURCHASE: // בקשת רכישה
+        console.log('Store purchase approved - no balance change needed');
+        break;
+      default:
+        console.log('Unhandled transaction type:', pendingTransaction.type);
+        break;
+    }
+  }
+
+  await this.transactionsRepository.update(
+    { transaction_id: childTransactionId },
+    { status }
+  );
+
+  return { message: `Transaction ${action}d successfully.` };
+}
+
 
   async getChildrenPaymentReuqests(parentId: string) {
     const { balances } = await this._getParentChildren(parentId);
