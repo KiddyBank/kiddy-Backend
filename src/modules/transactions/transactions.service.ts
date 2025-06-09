@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +7,9 @@ import { ChildBalance } from '../child-balance/entities/child-balance.entity';
 import { Transaction } from './entities/transaction.entity';
 import { TransactionType, TransactionStatus } from './entities/transaction.entity';
 import { Task } from '../tasks/task.entity'; 
+import { SavingsGoal } from '../savings-goals/entities/savings-goal.entity';
+import { SavingsGoalsTransaction } from '../savings-goals/entities/savings-goals-transaction.entity';
+
 
 
 
@@ -21,6 +24,12 @@ export class TransactionsService {
 
   @InjectRepository(Task)
   private tasksRepository: Repository<Task>,
+
+  @InjectRepository(SavingsGoal)
+  private goalsRepository: Repository<SavingsGoal>,
+
+  @InjectRepository(SavingsGoalsTransaction)
+  private goalTransactionsRepository: Repository<SavingsGoalsTransaction>,
 ) {}
 
   create(createTransactionDto: CreateTransactionDto) {
@@ -66,6 +75,51 @@ async createTaskPaymentRequest(taskId: string, childId: string) {
   });
 
   return this.transactionsRepository.save(transaction);
+}
+
+async createGoalDepositTransaction(
+  balanceId: number,
+  goalId: number,
+  amount: number,
+  description: string = 'הפקדה לחיסכון'
+): Promise<Transaction> {
+  const balance = await this.childBalanceRepository.findOne({ where: { balance_id: balanceId } });
+  const goal = await this.goalsRepository.findOne({ where: { id: goalId } });
+
+  if (!balance || !goal) {
+    throw new Error('Balance או Goal לא נמצאו');
+  }
+
+   if (amount > balance.balance_amount) {
+    throw new BadRequestException('סכום ההפקדה גבוה מיתרת הילד');
+  }
+
+  const transaction = this.transactionsRepository.create({
+    balance_id: balance.balance_id,
+    child_balance: balance,
+    type: TransactionType.GOAL_DEPOSIT,
+    amount,
+    description,
+    status: TransactionStatus.COMPLETED,
+  });
+
+  const savedTransaction = await this.transactionsRepository.save(transaction);
+
+  const goalTransaction = this.goalTransactionsRepository.create({
+    goal_id: goal.id,
+    transaction_id: savedTransaction.transaction_id,
+  });
+
+  await this.goalTransactionsRepository.save(goalTransaction);
+
+  // עדכון יתרה ועדכון סכום נוכחי ביעד
+  balance.balance_amount -= amount;
+  goal.current_amount += amount;
+
+  await this.childBalanceRepository.save(balance);
+  await this.goalsRepository.save(goal);
+
+  return savedTransaction;
 }
 
 

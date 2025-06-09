@@ -59,7 +59,7 @@ constructor(balanceId: number, transactionType: TransactionType, amount: number,
   status: TransactionStatus;
 
   @CreateDateColumn()
-  created_at:  boolean;
+  created_at: Date;
 
   @UpdateDateColumn({ nullable: true })
   updated_at: Date;

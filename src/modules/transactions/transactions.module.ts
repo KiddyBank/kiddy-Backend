@@ -5,10 +5,21 @@ import { TransactionsService } from './transactions.service';
 import { ChildBalance } from '../child-balance/entities/child-balance.entity';
 import { Transaction } from './entities/transaction.entity';
 import { Task } from '../tasks/task.entity';
+import { SavingsGoal } from '../savings-goals/entities/savings-goal.entity';
+import { SavingsGoalsTransaction } from '../savings-goals/entities/savings-goals-transaction.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ChildBalance, Transaction,Task]) ],
+  imports: [
+    TypeOrmModule.forFeature([
+      ChildBalance,
+      Transaction,
+      Task,
+      SavingsGoal, 
+      SavingsGoalsTransaction, 
+    ]),
+  ],
   controllers: [TransactionsController],
   providers: [TransactionsService],
+  exports: [TransactionsService],
 })
 export class TransactionsModule {}

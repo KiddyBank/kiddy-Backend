@@ -44,7 +44,11 @@ export class SavingsGoal {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @ManyToOne(() => ChildBalance, (childBalance) => childBalance.balance_id)
-  @JoinColumn()
-  balance_id: string;
+  @ManyToOne(() => ChildBalance, (balance) => balance.savings_goals)
+  @JoinColumn({ name: 'balance_id' })
+  balance: ChildBalance; 
+
+  @Column()
+  balance_id: number; 
+
 }

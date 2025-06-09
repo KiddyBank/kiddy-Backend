@@ -7,8 +7,9 @@ import { TransactionsModule } from './modules/transactions/transactions.module';
 import { UsersModule } from './modules/users/users.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { StandingOrdersModule } from './modules/standing-orders/standing-orders.module';
-
 import { AuthModule } from './modules/auth/auth.module';
+import { SavingsGoalsModule } from './modules/savings-goals/savings-goals.module';
+
 
 @Module({
   imports: [
@@ -33,7 +34,8 @@ import { AuthModule } from './modules/auth/auth.module';
     TransactionsModule,
     TasksModule,
     StandingOrdersModule,
-    AuthModule
+    AuthModule,
+    SavingsGoalsModule,
 
   ],
 })
