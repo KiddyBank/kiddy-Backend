@@ -51,10 +51,10 @@ export class SavingsGoalsController {
 }
 
 @UseGuards(AuthGuard('jwt'))
-@Get(':goalId/transactions')
-getGoalTransactions(@Param('goalId') goalId: number) {
-  return this.savingsGoalsService.getTransactionsByGoalId(goalId);
-}
+  @Get(':goalId/transactions')
+  getGoalTransactions(@Param('goalId') goalId: number) {
+    return this.savingsGoalsService.getTransactionsByGoalId(goalId);
+  }
 
 
 }

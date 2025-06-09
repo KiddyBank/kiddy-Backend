@@ -38,5 +38,17 @@ export class TransactionsController {
     async requestTaskPayment(@Body() body: { taskId: string; childId: string }) {
       return this.transactionsService.createTaskPaymentRequest(body.taskId, body.childId);
     }
+
+  @Post('deposit-to-goal')
+    async depositToGoal(@Body() body: {
+      balanceId: number;
+      goalId: number;
+      amount: number;
+      description?: string;
+    }) {
+      const { balanceId, goalId, amount, description } = body;
+      return this.transactionsService.createGoalDepositTransaction(balanceId, goalId, amount, description);
+    }
+
   
 }

@@ -112,9 +112,12 @@ async createGoalDepositTransaction(
 
   await this.goalTransactionsRepository.save(goalTransaction);
 
-  // עדכון יתרה ועדכון סכום נוכחי ביעד
-  balance.balance_amount -= amount;
-  goal.current_amount += amount;
+  const roundedAmount = Math.floor(amount); 
+
+  balance.balance_amount -= roundedAmount;
+  goal.current_amount = Math.floor(Number(goal.current_amount) + roundedAmount);
+
+  console.log('updated goal.current_amount:', goal.current_amount);
 
   await this.childBalanceRepository.save(balance);
   await this.goalsRepository.save(goal);

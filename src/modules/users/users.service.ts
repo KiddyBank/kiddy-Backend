@@ -56,7 +56,10 @@ export class UsersService {
         return { balance: 0, message: 'Balance not found' };
       }
 
-      return { balance: balance.balance_amount };
+      return {
+        balance: balance.balance_amount,
+        balance_id: balance.balance_id, 
+      };
     } catch (error) {
       throw error;
     }

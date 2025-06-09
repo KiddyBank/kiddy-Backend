@@ -19,10 +19,10 @@ export class SavingsGoal {
   @Column()
   category: string;
 
-  @Column()
+  @Column({ type: 'double precision' })
   target_amount: number;
 
-  @Column({default: 0})
+  @Column({ type: 'double precision', default: 0 })
   current_amount: number;
 
   @CreateDateColumn()
