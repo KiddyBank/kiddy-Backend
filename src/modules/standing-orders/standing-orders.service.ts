@@ -52,8 +52,7 @@ export class StandingOrdersService {
     }
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
-  async runScheduledAllowances() {
+    async runScheduledAllowances() {
     const orders = await this.repo.find({ where: { status: 'active' } });
     const now = new Date();  
 
