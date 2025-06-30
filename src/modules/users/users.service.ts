@@ -78,7 +78,7 @@ export class UsersService {
 
       const transactions = await this.transactionsRepository.find({
         where: whereConditions,
-        order: { created_at: 'DESC' },
+        order: { updated_at: 'DESC' },
       });
 
       return transactions;
@@ -286,6 +286,34 @@ export class UsersService {
     return {
       children,
       balances,
+    };
+  }
+
+
+  async getChildById(childId: string) {
+    const user = await this.usersRepository.findOne({
+      where: { user_id: childId },
+      select: [
+        'user_id',    
+        'username',
+        'email',
+        'gender',
+        'dob',
+        'avatar_path'
+      ],
+    });
+
+    if (!user) {
+      throw new Error('Child not found');
+    }
+
+    return {
+      userId: user.user_id,
+      username: user.username,
+      email: user.email,
+      gender: user.gender,
+      dob: user.dob,
+      avatarPath: user.avatar_path,
     };
   }
 
