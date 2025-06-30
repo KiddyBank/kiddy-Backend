@@ -50,5 +50,24 @@ export class TransactionsController {
       return this.transactionsService.createGoalDepositTransaction(balanceId, goalId, amount, description);
     }
 
+    @Patch('approve-store/:transactionId')
+    async approveStorePurchase(
+      @Param('transactionId') transactionId: string,
+      @Body('parentId') parentId: string,
+      @Body('action') action: 'approve' | 'reject'
+    ) {
+      return this.transactionsService.handleStorePurchaseApproval(parentId, transactionId, action);
+    }
+
+    @Patch('approve-deposit/:transactionId')
+    async approveDepositRequest(
+      @Param('transactionId') transactionId: string,
+      @Body('parentId') parentId: string,
+      @Body('action') action: 'approve' | 'reject'
+    ) {
+      return this.transactionsService.handleDepositApproval(parentId, transactionId, action);
+    }
+
+
   
 }

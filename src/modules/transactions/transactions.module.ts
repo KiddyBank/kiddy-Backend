@@ -7,6 +7,7 @@ import { Transaction } from './entities/transaction.entity';
 import { Task } from '../tasks/task.entity';
 import { SavingsGoal } from '../savings-goals/entities/savings-goal.entity';
 import { SavingsGoalsTransaction } from '../savings-goals/entities/savings-goals-transaction.entity';
+import { User } from '../users/user.entity';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { SavingsGoalsTransaction } from '../savings-goals/entities/savings-goals
       ChildBalance,
       Transaction,
       Task,
+      User,
       SavingsGoal, 
       SavingsGoalsTransaction, 
     ]),
