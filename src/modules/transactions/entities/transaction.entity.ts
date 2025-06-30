@@ -11,12 +11,12 @@ export enum TransactionType{
 }
 
 export enum TransactionStatus{
-    PENDING_PARENT_APPROVAL = 'PENDING_PARENT_APPROVAL',
-    APPORVED_BY_PARENT = 'APPROVED_BY_PARENT',
+    PENDING_PARENT_APPROVAL = 'PENDING_PARENT_APPROVAL', // ילד ביקש, מחכה לאישור הורה
+    APPROVED_BY_PARENT = 'APPROVED_BY_PARENT', // אושר ע"י ההורה
     PENDING_STORE = 'PENDING_STORE',
-    FAILED = 'FAILED',
-    REJECTED = 'REJECTED',
-    COMPLETED = 'COMPLETED',
+    FAILED = 'FAILED', // ניסיון שנכשל
+    REJECTED = 'REJECTED',  // נדחה ע"י ההורה
+    COMPLETED = 'COMPLETED',  // בוצע בפועל
 }
 
 @Entity({ schema: 'finance', name: 'transactions' })

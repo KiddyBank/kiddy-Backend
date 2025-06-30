@@ -4,6 +4,9 @@ import { Repository, DataSource } from 'typeorm';
 import { StandingOrder } from './entities/standing-order.entity';
 import { CreateStandingOrderDto } from './dto/create-standing-order.dto';
 import { ChildBalance } from '../child-balance/entities/child-balance.entity';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { Transaction, TransactionStatus, TransactionType } from '../transactions/entities/transaction.entity';
+
 
 @Injectable()
 export class StandingOrdersService {
@@ -49,10 +52,10 @@ export class StandingOrdersService {
     }
   }
 
-  async runScheduledAllowances() {
+    async runScheduledAllowances() {
     const orders = await this.repo.find({ where: { status: 'active' } });
-    const now = new Date();
-  
+    const now = new Date();  
+
     for (const order of orders) {
       if (!this.shouldRun(order, now)) continue;
   
@@ -70,6 +73,15 @@ export class StandingOrdersService {
   
         balance.balance_amount += order.amount;
         await queryRunner.manager.save(balance);
+
+        await queryRunner.manager.save(Transaction, new Transaction(
+          order.balanceId,
+          TransactionType.PARENT_DEPOSIT,
+          order.amount,
+          'דמי כיס',
+          TransactionStatus.COMPLETED
+        ));
+
   
         order.startDate = now;
         await queryRunner.manager.save(order);
