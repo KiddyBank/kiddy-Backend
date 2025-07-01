@@ -3,6 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column, UpdateDateColumn, OneToOne, Joi
 
 @Entity({ schema: 'finance', name: 'child_balance' })
 export class ChildBalance {
+  [x: string]: any;
 
   @PrimaryGeneratedColumn()
   balance_id: number;

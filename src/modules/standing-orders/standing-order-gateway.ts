@@ -9,7 +9,7 @@ import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
   cors: {
-    origin: '*', // אם את ב־dev או צריכה להתיר ממובייל
+    origin: '*', 
   },
 })
 export class AllowanceGateway implements OnGatewayConnection, OnGatewayDisconnect {

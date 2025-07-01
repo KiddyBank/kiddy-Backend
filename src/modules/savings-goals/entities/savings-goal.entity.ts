@@ -19,10 +19,10 @@ export class SavingsGoal {
   @Column()
   category: string;
 
-  @Column()
+  @Column({ type: 'double precision' })
   target_amount: number;
 
-  @Column({default: 0})
+  @Column({ type: 'double precision', default: 0 })
   current_amount: number;
 
   @CreateDateColumn()
@@ -44,7 +44,11 @@ export class SavingsGoal {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @ManyToOne(() => ChildBalance, (childBalance) => childBalance.balance_id)
-  @JoinColumn()
-  balance_id: string;
+  @ManyToOne(() => ChildBalance, (balance) => balance.savings_goals)
+  @JoinColumn({ name: 'balance_id' })
+  balance: ChildBalance; 
+
+  @Column()
+  balance_id: number; 
+
 }

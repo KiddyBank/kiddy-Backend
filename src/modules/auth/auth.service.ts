@@ -52,12 +52,9 @@ export class AuthService {
 
   async login(email: string, password: string) {
     const user = await this.validateUser(email, password);
-    console.log('User validated:', user);
     if (!user) throw new UnauthorizedException('Invalid credentials');
+    const payload = { sub: user.user_id, role: user.user_role, family_id: user.family_id };
 
-    const payload = { sub: user.user_id, role: user.user_role };
-
-    console.log('Login payload:', payload);
 
 
     return {

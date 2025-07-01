@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, In, Repository } from 'typeorm';
 import { ChildBalance } from '../child-balance/entities/child-balance.entity';
 import { StandingOrdersService } from '../standing-orders/standing-orders.service';
-import { Task } from '../tasks/entities/task.entity';
+import { Task } from '../tasks/task.entity';
 import { Transaction, TransactionStatus, TransactionType } from '../transactions/entities/transaction.entity';
 import { User, UserRole } from './user.entity';
 
@@ -56,7 +56,10 @@ export class UsersService {
         return { balance: 0, message: 'Balance not found' };
       }
 
-      return { balance: balance.balance_amount };
+      return {
+        balance: balance.balance_amount,
+        balance_id: balance.balance_id, 
+      };
     } catch (error) {
       throw error;
     }
@@ -75,7 +78,7 @@ export class UsersService {
 
       const transactions = await this.transactionsRepository.find({
         where: whereConditions,
-        order: { created_at: 'DESC' },
+        order: { updated_at: 'DESC' },
       });
 
       return transactions;
@@ -147,27 +150,46 @@ export class UsersService {
       throw new Error('Transaction not found');
     }
 
-    const child = await this.usersRepository.findOne({ where: { user_id: pendingTransaction!.child_balance.child_user.user_id } });
-    const parent = await this.usersRepository.findOne({ where: { user_id: parentId } });
+    const child = await this.usersRepository.findOne({
+      where: { user_id: pendingTransaction.child_balance.child_user.user_id }
+    });
+    const parent = await this.usersRepository.findOne({
+      where: { user_id: parentId }
+    });
 
-    const childFamilyId: number = child?.family.id!;
-    const parentFamilyId: number = parent?.family.id!;
-
-    if (childFamilyId !== parentFamilyId) {
-      console.error('❌ Mismatch between parent and child family id');
-      throw new Error('Mismatch between parent and child family id');
+    if (!parent || !parent.family || !child || child.family.id !== parent.family.id) {
+      throw new Error('Mismatch or missing data');
     }
 
-    const status =
+    // קובע סטטוס חדש
+    pendingTransaction.status =
       action === 'approve'
         ? TransactionStatus.APPROVED_BY_PARENT
         : TransactionStatus.REJECTED;
 
-    return this.transactionsRepository.update(
-      { transaction_id: childTransactionId },
-      { status }
-    );
+    if (action === 'approve') {
+      switch (pendingTransaction.type) {
+        case TransactionType.PARENT_DEPOSIT:
+          pendingTransaction.child_balance.balance_amount += pendingTransaction.amount;
+          await this.balanceRepository.save(pendingTransaction.child_balance);
+          break;
+
+        case TransactionType.STORE_PURCHASE:
+          console.log('Store purchase approved - no balance change needed');
+          break;
+
+        default:
+          console.log('Unhandled transaction type:', pendingTransaction.type);
+          break;
+      }
+    }
+
+    // שומר את הסטטוס החדש
+    await this.transactionsRepository.save(pendingTransaction);
+    return { message: `Transaction ${action}d successfully.` };
   }
+
+
 
   async getChildrenPaymentReuqests(parentId: string) {
     const { balances } = await this._getParentChildren(parentId);
@@ -176,10 +198,11 @@ export class UsersService {
       where: {
         balance_id: In(balances.map(child => child.balance_id)),
         status: TransactionStatus.PENDING_PARENT_APPROVAL
-      }
+      },
+      relations: ['child_balance', 'child_balance.child_user'] 
     });
-
   }
+
 
   async getParentChildren(parentId: string) {
     const { children, balances } = await this._getParentChildren(parentId);
@@ -194,7 +217,6 @@ export class UsersService {
       ])
     );
 
-    // 🧠 שימוש ב־StandingOrdersService עבור כל balanceId
     const standingOrders = await Promise.all(
       balances.map((b) => this.standingOrdersService.findByBalanceId(b.balance_id))
     );
@@ -214,11 +236,12 @@ export class UsersService {
     return children.map((child) => {
       const balanceInfo = balanceMap.get(child.user_id);
       const standing = balanceInfo?.id ? standingMap.get(balanceInfo.id) : null;
-
+      
       return {
         id: child.user_id,
         name: child.username,
-        imageUrl: `http://${process.env.HOST || 'localhost'}:3000/static${child.avatar_path || '/avatars/avatar-boy.png'}`,
+        gender: child.gender,
+        imageUrl: child.avatar_path || '/avatars/avatar-boy.png',
         balance: balanceInfo?.amount || 0,
         balanceId: balanceInfo?.id || null,
         allowanceAmount: standing?.amount || null,
@@ -226,17 +249,13 @@ export class UsersService {
           standing?.interval === 30
             ? 'monthly'
             : standing?.interval === 7
-              ? 'weekly'
-              : standing?.interval
-                ? 'test'
-                : undefined,
+            ? 'weekly'
+            : standing?.interval === 0
+            ? 'test'
+            : undefined,
       };
     });
   }
-
-
-
-
 
   async _getParentChildren(parentId: string): Promise<{
     children: User[];
@@ -270,6 +289,34 @@ export class UsersService {
     return {
       children,
       balances,
+    };
+  }
+
+
+  async getChildById(childId: string) {
+    const user = await this.usersRepository.findOne({
+      where: { user_id: childId },
+      select: [
+        'user_id',    
+        'username',
+        'email',
+        'gender',
+        'dob',
+        'avatar_path'
+      ],
+    });
+
+    if (!user) {
+      throw new Error('Child not found');
+    }
+
+    return {
+      userId: user.user_id,
+      username: user.username,
+      email: user.email,
+      gender: user.gender,
+      dob: user.dob,
+      avatarPath: user.avatar_path,
     };
   }
 
