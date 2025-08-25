@@ -4,8 +4,8 @@ import { Transaction, TransactionStatus, TransactionType } from "src/modules/tra
 import { UsersService } from "src/modules/users/users.service";
 import { getChallengeEndDate } from "src/utils/challenges";
 import { In, MoreThanOrEqual, Repository } from "typeorm";
-import { AbstractChallengeEvaluator } from "./base-challenge-strategy";
-import { ChallengeEvaluationStatus } from "./challenge-evaluator-strategy";
+import { AbstractChallengeEvaluator } from "../base-challenge-strategy";
+import { ChallengeEvaluationStatus } from "../challenge-evaluator-strategy";
 
 
 export class SpendLessThanEvaluator extends AbstractChallengeEvaluator<{ maxAmount: number }> {

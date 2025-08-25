@@ -4,8 +4,8 @@ import { Transaction, TransactionStatus, TransactionType } from "src/modules/tra
 import { UsersService } from "src/modules/users/users.service";
 import { getChallengeEndDate } from "src/utils/challenges";
 import { In, MoreThanOrEqual, Repository } from "typeorm";
-import { AbstractChallengeEvaluator } from "./base-challenge-strategy";
-import { ChallengeEvaluationStatus } from "./challenge-evaluator-strategy";
+import { AbstractChallengeEvaluator } from "../base-challenge-strategy";
+import { ChallengeEvaluationStatus } from "../challenge-evaluator-strategy";
 
 export class RequestPaymentCountEvaluator extends AbstractChallengeEvaluator<{ requiredCount: number }> {
   constructor(
@@ -48,7 +48,7 @@ export class RequestPaymentCountEvaluator extends AbstractChallengeEvaluator<{ r
     });
 
     const progress = Math.min(count / scaledParams.requiredCount, 1);
-    console.log(`User ${userId} progress: ${progress} (count: ${count}, required: ${scaledParams.requiredCount})`);
+    console.log(`User ${userId} progress: ${progress} (count: ${count}, required: ${scaledParams.requiredCount}), date: ${startDate}, balanceId: ${balance.balance_id}`);
     const now = new Date();
     const endDate = getChallengeEndDate(startDate, interval);
 

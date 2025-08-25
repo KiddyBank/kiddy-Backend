@@ -3,8 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Challenge } from "../challenges/entities/challenge.entity";
 import { ChallengeEvalStrategy, ChallengeEvaluationStatus } from "../challenges/evaluators/challenge-evaluator-strategy";
-import { RequestPaymentCountEvaluator } from "../challenges/evaluators/request-payment-count-evaluator";
-import { SpendLessThanEvaluator } from "../challenges/evaluators/spend-less-than-evaluator";
+import { RequestPaymentCountEvaluator } from "../challenges/evaluators/level-1/request-payment-count-evaluator";
+import { SpendLessThanEvaluator } from "../challenges/evaluators/level-1/spend-less-than-evaluator";
 import { Transaction } from "../transactions/entities/transaction.entity";
 import { UserStats } from "../users-stats/entities/users-stat.entity";
 import { UsersStatsService } from "../users-stats/users-stats.service";
@@ -160,7 +160,6 @@ export class ChallengeInstanceService {
   async generateInitialChallenges(userId: string): Promise<void> {
     const category = await this.userStatsService.getLevelCategory(1);
     const challenges: Challenge[] = await this.getChallengesByCategory(category);
-    const now = new Date();
 
     const instances: ChallengeInstance[] = [];
 
@@ -175,7 +174,6 @@ export class ChallengeInstanceService {
         instance.status = ChallengeEvaluationStatus.IN_PROGRESS;
         instance.difficulty = this.getRandomDifficulty();
         instance.interval = interval;
-        instance.start_date = now;
         instance.progress = 0;
 
         instances.push(instance);

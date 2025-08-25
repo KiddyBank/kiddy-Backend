@@ -10,8 +10,9 @@ export class RegisterParentDto {
     children: {
         username: string;
         email: string;
+        password: string;
         dateOfBirth: Date;
         gender: Gender;
     }[];
-    
+
 }

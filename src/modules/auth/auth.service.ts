@@ -84,8 +84,11 @@ export class AuthService {
     if (dto.children && Array.isArray(dto.children)) {
       for (const child of dto.children) {
 
-        const generatedRandomPassword = generateRandomPassword();
-        const hashedChildPassword = await bcrypt.hash(generatedRandomPassword, 10);
+        if (!child.password) {
+          throw new Error(`Child ${child.username} must have a password`);
+        }
+
+        const hashedChildPassword = await bcrypt.hash(child.password, 10);
 
         const childData = {
           username: child.username,

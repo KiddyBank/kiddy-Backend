@@ -15,11 +15,11 @@ export class EducationService {
   ) { }
 
   async getContentForFirstAction(userId: string, actionType: string) {
-    const already = await this.userActionRepo.findOne({ where: { user_id: userId, action_type: actionType } });
+    // const already = await this.userActionRepo.findOne({ where: { user_id: userId, action_type: actionType } });
 
-    if (already?.first_action_completed) {
-      return null;
-    }
+    // if (already?.first_action_completed) {
+    //   return null;
+    // }
 
     const content = await this.templateRepo.findOne({ where: { action_type: actionType, active: true } });
     return content;

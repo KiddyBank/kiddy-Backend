@@ -6,7 +6,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "t
 export enum ChallengeInterval {
     DAILY = 'DAILY',
     WEEKLY = 'WEEKLY',
-    MONTHLY = 'monthly'
+    MONTHLY = 'MONTHLY'
 }
 
 export enum ChallengeDifficulty {

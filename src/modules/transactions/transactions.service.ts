@@ -6,7 +6,7 @@ import { Repository } from 'typeorm';
 import { ChildBalance } from '../child-balance/entities/child-balance.entity';
 import { Transaction } from './entities/transaction.entity';
 import { TransactionType, TransactionStatus } from './entities/transaction.entity';
-import { Task } from '../tasks/task.entity'; 
+import { Task } from '../tasks/task.entity';
 import { SavingsGoal } from '../savings-goals/entities/savings-goal.entity';
 import { SavingsGoalsTransaction } from '../savings-goals/entities/savings-goals-transaction.entity';
 import { User } from '../users/user.entity';
@@ -14,26 +14,26 @@ import { User } from '../users/user.entity';
 
 @Injectable()
 export class TransactionsService {
- constructor(
-  @InjectRepository(ChildBalance)
-  private childBalanceRepository: Repository<ChildBalance>,
+  constructor(
+    @InjectRepository(ChildBalance)
+    private childBalanceRepository: Repository<ChildBalance>,
 
-  @InjectRepository(Transaction)
-  private transactionsRepository: Repository<Transaction>,
+    @InjectRepository(Transaction)
+    private transactionsRepository: Repository<Transaction>,
 
-  @InjectRepository(User)
-  private usersRepository: Repository<User>,
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
 
 
-  @InjectRepository(Task)
-  private tasksRepository: Repository<Task>,
+    @InjectRepository(Task)
+    private tasksRepository: Repository<Task>,
 
-  @InjectRepository(SavingsGoal)
-  private goalsRepository: Repository<SavingsGoal>,
+    @InjectRepository(SavingsGoal)
+    private goalsRepository: Repository<SavingsGoal>,
 
-  @InjectRepository(SavingsGoalsTransaction)
-  private goalTransactionsRepository: Repository<SavingsGoalsTransaction>,
-) {}
+    @InjectRepository(SavingsGoalsTransaction)
+    private goalTransactionsRepository: Repository<SavingsGoalsTransaction>,
+  ) { }
 
   create(createTransactionDto: CreateTransactionDto) {
     return 'This action adds a new transaction';
@@ -114,7 +114,7 @@ export class TransactionsService {
 
     await this.goalTransactionsRepository.save(goalTransaction);
 
-    const roundedAmount = Math.floor(amount); 
+    const roundedAmount = Math.floor(amount);
 
     balance.balance_amount -= roundedAmount;
     goal.current_amount = Math.floor(Number(goal.current_amount) + roundedAmount);
@@ -127,70 +127,79 @@ export class TransactionsService {
     return savedTransaction;
   }
 
-   async handleStorePurchaseApproval(
-      parentId: string,
-      transactionId: string,
-      action: 'approve' | 'reject'
-    ) {
-      const tx = await this.transactionsRepository.findOne({
-        where: { transaction_id: transactionId },
-        relations: ['child_balance', 'child_balance.child_user', 'child_balance.child_user.family']
-      });
-  
-      if (!tx) {
-        throw new Error('Transaction not found');
-      }
-  
-      const child = tx.child_balance.child_user;
-      const parent = await this.usersRepository.findOne({ where: { user_id: parentId }, relations: ['family'] });
-  
-      if (!parent || !parent.family || !child || child.family.id !== parent.family.id) {
-        throw new Error('Parent and child mismatch');
-      }
-  
-      tx.status =
-        action === 'approve'
-          ? TransactionStatus.APPROVED_BY_PARENT
-          : TransactionStatus.REJECTED;
-  
-      await this.transactionsRepository.save(tx);
-  
-      return { message: `Store purchase ${action}d successfully.` };
+  async handleStorePurchaseApproval(
+    parentId: string,
+    transactionId: string,
+    action: 'approve' | 'reject'
+  ) {
+    const tx = await this.transactionsRepository.findOne({
+      where: { transaction_id: transactionId },
+      relations: ['child_balance', 'child_balance.child_user', 'child_balance.child_user.family']
+    });
+
+    if (!tx) {
+      throw new Error('Transaction not found');
     }
-  
-    async handleDepositApproval(
-      parentId: string,
-      transactionId: string,
-      action: 'approve' | 'reject'
-    ) {
-      const tx = await this.transactionsRepository.findOne({
-        where: { transaction_id: transactionId },
-        relations: ['child_balance', 'child_balance.child_user', 'child_balance.child_user.family']
-      });
-  
-      if (!tx) {
-        throw new Error('Transaction not found');
-      }
-  
-      const child = tx.child_balance.child_user;
-      const parent = await this.usersRepository.findOne({ where: { user_id: parentId }, relations: ['family'] });
-  
-      if (!parent || !parent.family || !child || child.family.id !== parent.family.id) {
-        throw new Error('Parent and child mismatch');
-      }
-  
-      if (action === 'approve') {
-        tx.child_balance.balance_amount += tx.amount;
-        await this.childBalanceRepository.save(tx.child_balance);
-        tx.status = TransactionStatus.COMPLETED; 
-      } else {
-        tx.status = TransactionStatus.REJECTED;
-      }
-  
-      await this.transactionsRepository.save(tx);
-  
-      return { message: `Deposit request ${action}d successfully.` };
+
+    const child = tx.child_balance.child_user;
+    const parent = await this.usersRepository.findOne({ where: { user_id: parentId }, relations: ['family'] });
+
+    if (!parent || !parent.family || !child || child.family.id !== parent.family.id) {
+      throw new Error('Parent and child mismatch');
     }
+
+    tx.status =
+      action === 'approve'
+        ? TransactionStatus.APPROVED_BY_PARENT
+        : TransactionStatus.REJECTED;
+
+    await this.transactionsRepository.save(tx);
+
+    return { message: `Store purchase ${action}d successfully.` };
+  }
+
+  async handleDepositApproval(
+    parentId: string,
+    transactionId: string,
+    action: 'approve' | 'reject'
+  ) {
+    const tx = await this.transactionsRepository.findOne({
+      where: { transaction_id: transactionId },
+      relations: ['child_balance', 'child_balance.child_user', 'child_balance.child_user.family']
+    });
+
+    if (!tx) {
+      throw new Error('Transaction not found');
+    }
+
+    const child = tx.child_balance.child_user;
+    const parent = await this.usersRepository.findOne({ where: { user_id: parentId }, relations: ['family'] });
+
+    if (!parent || !parent.family || !child || child.family.id !== parent.family.id) {
+      throw new Error('Parent and child mismatch');
+    }
+
+    if (action === 'approve') {
+      tx.child_balance.balance_amount += tx.amount;
+      await this.childBalanceRepository.save(tx.child_balance);
+      tx.status = TransactionStatus.COMPLETED;
+    } else {
+      tx.status = TransactionStatus.REJECTED;
+    }
+
+    await this.transactionsRepository.save(tx);
+
+    return { message: `Deposit request ${action}d successfully.` };
+  }
+
+  async handleFirstTransaction(userId: string, transactionType: string) {
+    const already = await this.transactionsRepository.count();
+    if (already > 0) {
+      return null;
+
+    }
+
+  }
 
 
 }
